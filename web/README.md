@@ -28,6 +28,10 @@ Paste **certificate** JSON from `realize check` stdout. Specs and candidates are
 
 ## Pages
 
-https://zuluyokohama.github.io/realize/
+Intended URL: https://zuluyokohama.github.io/realize/
 
-Asset URLs are relative (`./css/...`) so project Pages works.
+Enable once in the GitHub UI (the token used to push cannot call the Pages API):
+
+Settings → Pages → Deploy from a branch → `main` → `/web` → Save.
+
+Asset URLs are relative (`./css/...`) so project Pages works. `.nojekyll` is present.
