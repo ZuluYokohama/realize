@@ -1,0 +1,10 @@
+{
+  "schema_version": "realize.v0",
+  "spec_id": "vcms.three_state",
+  "spec_digest": "sha256:59e0a83691b58305f32d1416cb31b7ac5d9af0f3bba84cf2e50bc6745b0630cf",
+  "term": {
+    "kind": "case_table",
+    "encoder_id": "collapse_all",
+    "table": {"z": 0}
+  }
+}

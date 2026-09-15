@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ZuluYokohama/realize/schema/realize.v0.json",
+  "title": "realize.v0 spec",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "problem_family",
+    "context",
+    "specification",
+    "library",
+    "bound"
+  ],
+  "properties": {
+    "schema_version": { "const": "realize.v0" },
+    "id": { "type": "string", "minLength": 1 },
+    "problem_family": { "enum": ["formula", "encoder", "term_series"] },
+    "context": {
+      "type": "object",
+      "required": ["semantics"],
+      "properties": {
+        "semantics": {
+          "enum": ["exact_rational", "finite_relation", "finite_integer"]
+        },
+        "X": true,
+        "Y": true,
+        "q0": { "type": "integer" },
+        "cap": { "type": "integer" },
+        "alphabet": { "type": "array" },
+        "height": { "type": "integer" },
+        "width": { "type": "integer" },
+        "types": true,
+        "Y_target": { "type": "integer" }
+      },
+      "additionalProperties": false
+    },
+    "specification": {
+      "type": "object",
+      "required": ["R", "K", "preferences", "evidence_mode", "provenance"],
+      "properties": {
+        "R": true,
+        "K": true,
+        "preferences": { "type": "array" },
+        "evidence_mode": { "const": "exhaustive_finite" },
+        "provenance": { "type": "array" }
+      },
+      "additionalProperties": false
+    },
+    "library": {
+      "type": "object",
+      "required": ["encoders", "primitives", "grammar"],
+      "properties": {
+        "encoders": { "type": "array" },
+        "primitives": { "type": "array" },
+        "grammar": {
+          "enum": [
+            "bounded_coeff_template",
+            "finite_case_table",
+            "guarded_integer_sequence",
+            "typed_grid"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "bound": {
+      "type": "object",
+      "properties": {
+        "budget": { "type": "integer", "minimum": 0 },
+        "max_term_size": { "type": "integer" },
+        "horizon": { "type": "integer" },
+        "affine_only": { "type": "boolean" },
+        "max_length": { "type": "integer" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

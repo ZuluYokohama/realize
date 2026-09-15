@@ -1,0 +1,28 @@
+{
+  "schema_version": "realize.v0",
+  "id": "vcms.three_state",
+  "problem_family": "encoder",
+  "context": {
+    "X": [0, 1, 2],
+    "Y": [0, 1, 2],
+    "semantics": "finite_relation"
+  },
+  "specification": {
+    "R": {"0": [0, 1], "1": [1, 2], "2": [0, 2]},
+    "K": null,
+    "preferences": [],
+    "evidence_mode": "exhaustive_finite",
+    "provenance": [{"clause": "R", "source": "VCMS Example 4.3"}]
+  },
+  "library": {
+    "encoders": [
+      {
+        "id": "collapse_all",
+        "map": {"0": "z", "1": "z", "2": "z"}
+      }
+    ],
+    "primitives": [{"id": "case_table"}],
+    "grammar": "finite_case_table"
+  },
+  "bound": {"budget": 100, "max_term_size": 8}
+}

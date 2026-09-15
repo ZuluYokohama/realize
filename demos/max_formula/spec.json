@@ -1,0 +1,25 @@
+{
+  "schema_version": "realize.v0",
+  "id": "vcos.table2.larger",
+  "problem_family": "formula",
+  "context": {
+    "semantics": "exact_rational"
+  },
+  "specification": {
+    "R": {"phrase": "larger"},
+    "K": null,
+    "preferences": [],
+    "evidence_mode": "exhaustive_finite",
+    "provenance": [{"clause": "R", "source": "VCOS §8.1 Table 2"}]
+  },
+  "library": {
+    "encoders": [],
+    "primitives": [{"id": "add"}, {"id": "sub"}, {"id": "abs"}, {"id": "scale"}],
+    "grammar": "bounded_coeff_template"
+  },
+  "bound": {
+    "affine_only": false,
+    "budget": 10000,
+    "max_term_size": 4
+  }
+}
