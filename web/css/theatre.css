@@ -81,6 +81,7 @@ textarea {
   font-family: "IBM Plex Mono", ui-monospace, monospace;
 }
 
+#landing,
 #app {
   max-width: 1280px;
   margin: 0 auto;
@@ -113,6 +114,12 @@ textarea {
 .nav a[aria-current="page"] {
   color: var(--pass);
   text-decoration: none;
+}
+
+.nav a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .claim {
@@ -254,7 +261,7 @@ textarea {
 
 .stages a,
 .chip {
-  min-height: 40px;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   padding: 0 12px;
@@ -676,11 +683,28 @@ details.eng summary {
   margin: 0;
 }
 
+.said-model {
+  color: var(--muted);
+}
+
 .said-model p:last-child {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   line-height: 1.45;
   max-width: 36ch;
+  quotes: "“" "”";
+}
+
+.said-model p:last-child::before {
+  content: open-quote;
+  color: var(--hair);
+  font-size: 1.6em;
+  line-height: 0;
+  margin-right: 0.08em;
+}
+
+.said-check {
+  border-left: 2px solid var(--pass);
 }
 
 @media (max-width: 700px) {

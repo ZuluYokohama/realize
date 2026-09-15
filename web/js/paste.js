@@ -80,7 +80,16 @@ export function renderPaste(root) {
     }
     dispatch(out, obj);
   });
-  box.append(ta, btn, out);
+  const sample = document.createElement("button");
+  sample.className = "enter";
+  sample.style.marginTop = "12px";
+  sample.style.marginLeft = "8px";
+  sample.textContent = "Load a sample result";
+  sample.addEventListener("click", async () => {
+    const res = await fetch("./fixtures/three_state.certificate.json");
+    ta.value = await res.text();
+  });
+  box.append(ta, btn, sample, out);
   root.appendChild(box);
 }
 
