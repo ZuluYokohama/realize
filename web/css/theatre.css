@@ -452,7 +452,9 @@ svg.ev {
   display: block;
   width: 100%;
   height: auto;
+  min-height: 180px;
   object-fit: cover;
+  background: var(--panel);
 }
 
 .lede {

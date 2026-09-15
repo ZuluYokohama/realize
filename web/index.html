@@ -3,32 +3,142 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>realize — an independent inspector for answers from AI</title>
+    <title>realize — don’t take the AI’s word for it</title>
     <meta
       name="description"
-      content="Your model can propose a solution. realize stamps whether that solution actually holds — and when it cannot tell, it says so."
+      content="When an AI gives you an answer for work, realize is a second check that the AI cannot talk into a yes."
     />
     <link rel="stylesheet" href="./css/theatre.css" />
   </head>
   <body>
-    <noscript>
-      <div id="app">
-        <p class="claim">An independent inspector for answers from AI.</p>
-        <section class="nonclaims">
-          <h2>What this is not</h2>
-          <ol>
-            <li>It does not understand arbitrary English.</li>
-            <li>It does not let the AI grade itself.</li>
-            <li>This page cannot certify. Run realize check on your machine.</li>
-          </ol>
-        </section>
-        <div class="install">
-          <pre>pip install realize
-realize demo three_state</pre>
+    <div id="landing">
+      <header class="topbar">
+        <a class="mark" href="./index.html">realize</a>
+        <nav class="nav">
+          <a href="./index.html" aria-current="page">What it is</a>
+          <a href="#/studio/three_state">See it work</a>
+          <a href="#/nonclaims">Limits</a>
+        </nav>
+      </header>
+
+      <figure class="hero">
+        <img
+          src="./art/hero.jpg"
+          width="1600"
+          height="900"
+          alt="A brass hand-stamp and a teal wax seal on a dark steel inspection bench."
+          fetchpriority="high"
+        />
+      </figure>
+
+      <h1 class="claim">Don’t take the AI’s word for it.</h1>
+      <p class="lede">
+        When ChatGPT or any other model gives you an answer for work, realize is a second
+        check that the AI cannot talk into a yes. If the answer is right, you get a hold.
+        If it is wrong, you get a fail. If nobody can tell yet, it says so.
+      </p>
+
+      <div class="steps">
+        <article>
+          <h3>You have a job</h3>
+          <p>Something that has a right and a wrong: pick the larger number, recolor a picture, agree on one code.</p>
+        </article>
+        <article>
+          <h3>The AI proposes</h3>
+          <p>A formula, a sequence of steps, a guess. Confident. Maybe correct. Maybe not.</p>
+        </article>
+        <article>
+          <h3>realize checks</h3>
+          <p>A separate program on your computer inspects the proposal. It does not work for the AI. This webpage only shows the result.</p>
+        </article>
+      </div>
+
+      <p class="kicker">Why this exists</p>
+      <p class="lede">
+        The contractor says the house is finished. The inspector does not work for the contractor.
+        That is the benefit: catch an AI mistake before it becomes your mistake.
+      </p>
+
+      <p class="kicker">Four possible results</p>
+      <figure class="hero">
+        <img
+          src="./art/four-tags.jpg"
+          width="1600"
+          height="900"
+          alt="Four metal inspection tags in a row: teal, amber, violet, and dark graphite."
+        />
+      </figure>
+      <div class="tiles">
+        <div class="tile">
+          <div class="v v-pass">It holds</div>
+          <p>This answer matches the job you wrote.</p>
+        </div>
+        <div class="tile">
+          <div class="v v-counter">This one is wrong</div>
+          <p>Here is a case where it breaks.</p>
+        </div>
+        <div class="tile">
+          <div class="v v-unsat">Nothing here works</div>
+          <p>In the options you allowed, there is no answer.</p>
+        </div>
+        <div class="tile">
+          <div class="v v-unknown">Can’t tell yet</div>
+          <p>Not enough time, or the question is outside what it can check.</p>
         </div>
       </div>
-    </noscript>
-    <div id="app"></div>
+
+      <p class="kicker">See three real checks</p>
+      <div class="stories">
+        <a class="story" href="#/studio/three_state">
+          <img src="./art/three-keys.jpg" width="1200" height="675" alt="Three iron keys on one ring that never meet in the middle." />
+          <div class="pad">
+            <h3>Three people, one code</h3>
+            <p>Any two can agree. All three cannot. Result: nothing here works.</p>
+          </div>
+        </a>
+        <a class="story" href="#/studio/max_formula">
+          <img src="./art/larger-number.jpg" width="1200" height="675" alt="Two sheets of paper folded together with a teal thread along the fold." />
+          <div class="pad">
+            <h3>Always pick the larger number</h3>
+            <p>The AI’s short formula holds. A too-simple version has no answer.</p>
+          </div>
+        </a>
+        <a class="story" href="#/studio/grid_recolor">
+          <img src="./art/recolor.jpg" width="1200" height="675" alt="A grid of ceramic tiles, some dark, some teal, one cracked." />
+          <div class="pad">
+            <h3>Recolor a picture</h3>
+            <p>Recolor holds. Recolor and keep every color the same: impossible.</p>
+          </div>
+        </a>
+      </div>
+
+      <a class="enter" href="#/studio/three_state">See it work</a>
+
+      <section class="nonclaims">
+        <h2>What it will not pretend</h2>
+        <ol>
+          <li>It does not understand every sentence in English.</li>
+          <li>The AI does not get to grade its own homework.</li>
+          <li>Wanting a nicer answer does not change the check.</li>
+          <li>This webpage is a display. The check runs on your computer.</li>
+        </ol>
+      </section>
+
+      <div class="install">
+        <p>On your computer:</p>
+        <pre>pip install realize
+realize demo three_state</pre>
+      </div>
+
+      <footer class="foot">
+        <span>MIT</span>
+        <a href="https://github.com/ZuluYokohama/realize">source</a>
+        <a href="https://github.com/ZuluYokohama/realize/blob/main/skills/realize/SKILL.md">for agents</a>
+        <a href="https://github.com/ZuluYokohama/realize/blob/main/papers/README.md">papers</a>
+      </footer>
+    </div>
+
+    <div id="app" hidden></div>
     <script type="module" src="./js/router.js"></script>
   </body>
 </html>
