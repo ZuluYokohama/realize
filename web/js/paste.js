@@ -29,9 +29,9 @@ export function renderPaste(root) {
       art: "./art/hero.jpg",
       alt: "Brass inspection stamp and teal wax seal.",
       kicker: "Display only",
-      title: "Paste a stamp from your machine",
+      title: "Paste a result from your computer",
       body:
-        "This page cannot inspect a job. Run realize check on your computer, then paste the JSON it prints. If you paste the job or the guess instead of the stamp, it will refuse.",
+        "This page cannot check a job. Run realize check on your computer, then paste the JSON it prints. If you paste the job or the guess instead of the result, it will refuse.",
     })
   );
   const box = document.createElement("div");

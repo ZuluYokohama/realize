@@ -1,5 +1,7 @@
 # realize
 
+Don’t take the AI’s word for it. realize is an independent check for answers that have a right and a wrong. The model may propose. It may not grade itself.
+
 Independent checker for value-conditioned operator synthesis. Finite kernel. Four verdicts. Agents cannot grade themselves.
 
 **Read [NONCLAIMS.md](NONCLAIMS.md) first.** This package does not compile arbitrary English, does not beat SemGuS, and does not let an agent grade itself. Public theatre (render-only): [zuluyokohama.github.io/realize](https://zuluyokohama.github.io/realize/).

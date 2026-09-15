@@ -94,16 +94,18 @@ export function engineerDrawer(label, node) {
 
 export function humanStamp(verdict) {
   const map = {
-    PASS: "Holds",
-    COUNTEREXAMPLE: "This one fails",
-    UNSAT: "Empty catalog",
-    UNKNOWN: "Not enough",
+    PASS: "It holds",
+    COUNTEREXAMPLE: "This one is wrong",
+    UNSAT: "Nothing here works",
+    UNKNOWN: "Can't tell yet",
   };
   const wrap = document.createElement("div");
-  wrap.appendChild(stampEl(verdict));
+  const el = stampEl(verdict);
+  el.textContent = map[verdict] || verdict;
+  wrap.appendChild(el);
   const note = document.createElement("p");
-  note.className = "caption";
-  note.textContent = map[verdict] || verdict;
+  note.className = "caption mono";
+  note.textContent = verdict || "";
   wrap.appendChild(note);
   return wrap;
 }
