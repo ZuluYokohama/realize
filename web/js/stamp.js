@@ -62,3 +62,48 @@ export async function loadJSON(path) {
   if (!res.ok) throw new Error(`fixture ${path}: ${res.status}`);
   return res.json();
 }
+
+export function storyHead({ kicker, title, art, alt, body }) {
+  const wrap = document.createElement("div");
+  wrap.className = "story-copy";
+  const fig = document.createElement("figure");
+  fig.className = "plate";
+  const img = document.createElement("img");
+  img.src = art;
+  img.alt = alt || "";
+  fig.appendChild(img);
+  const k = document.createElement("p");
+  k.className = "kicker";
+  k.textContent = kicker;
+  const h = document.createElement("h2");
+  h.textContent = title;
+  const p = document.createElement("p");
+  p.textContent = body;
+  wrap.append(fig, k, h, p);
+  return wrap;
+}
+
+export function engineerDrawer(label, node) {
+  const d = document.createElement("details");
+  d.className = "eng";
+  const s = document.createElement("summary");
+  s.textContent = label;
+  d.append(s, node);
+  return d;
+}
+
+export function humanStamp(verdict) {
+  const map = {
+    PASS: "Holds",
+    COUNTEREXAMPLE: "This one fails",
+    UNSAT: "Empty catalog",
+    UNKNOWN: "Not enough",
+  };
+  const wrap = document.createElement("div");
+  wrap.appendChild(stampEl(verdict));
+  const note = document.createElement("p");
+  note.className = "caption";
+  note.textContent = map[verdict] || verdict;
+  wrap.appendChild(note);
+  return wrap;
+}

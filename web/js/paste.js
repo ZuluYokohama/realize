@@ -1,4 +1,4 @@
-import { adapterEl } from "./stamp.js";
+import { adapterEl, storyHead } from "./stamp.js";
 import { renderGeneric } from "./stages/generic.js";
 import { renderThreeState } from "./stages/three_state.js";
 import { renderMaxFormula } from "./stages/max_formula.js";
@@ -24,15 +24,25 @@ function looksLikeCandidate(obj) {
 }
 
 export function renderPaste(root) {
+  root.appendChild(
+    storyHead({
+      art: "./art/hero.jpg",
+      alt: "Brass inspection stamp and teal wax seal.",
+      kicker: "Display only",
+      title: "Paste a stamp from your machine",
+      body:
+        "This page cannot inspect a job. Run realize check on your computer, then paste the JSON it prints. If you paste the job or the guess instead of the stamp, it will refuse.",
+    })
+  );
   const box = document.createElement("div");
   const ta = document.createElement("textarea");
   ta.className = "paste";
-  ta.setAttribute("aria-label", "Certificate JSON");
-  ta.placeholder = "Paste a realize.v0 certificate JSON from `realize check` stdout.";
+  ta.setAttribute("aria-label", "Stamp JSON from realize check");
+  ta.placeholder = "Paste the JSON printed by: realize check spec.json candidate.json";
   const btn = document.createElement("button");
   btn.className = "enter";
   btn.style.marginTop = "12px";
-  btn.textContent = "Render";
+  btn.textContent = "Show the stamp";
   const out = document.createElement("div");
   out.style.marginTop = "20px";
   btn.addEventListener("click", () => {
@@ -41,31 +51,31 @@ export function renderPaste(root) {
     try {
       obj = JSON.parse(ta.value);
     } catch (err) {
-      out.appendChild(adapterEl(`JSON parse: ${err.message}`));
+      out.appendChild(adapterEl(`That is not JSON: ${err.message}`));
       return;
     }
     if (looksLikeSpec(obj)) {
       out.appendChild(
-        adapterEl("This looks like a spec. Run `realize check` locally and paste the certificate.")
+        adapterEl("That looks like the job, not the stamp. Run realize check on your machine and paste what it prints.")
       );
       return;
     }
     if (looksLikeCandidate(obj)) {
       out.appendChild(
-        adapterEl("This looks like a candidate. Run `realize check spec.json candidate.json` and paste stdout.")
+        adapterEl("That looks like a proposed answer, not the stamp. Run realize check and paste stdout.")
       );
       return;
     }
     if (!looksLikeCertificate(obj)) {
       out.appendChild(
-        adapterEl("Certificate missing verdict, spec_digest, or checker.name.")
+        adapterEl("A stamp needs verdict, spec_digest, and checker.name.")
       );
       return;
     }
     if (obj.checker.name !== "realize.checker") {
       const w = document.createElement("div");
       w.className = "warn";
-      w.textContent = `checker.name is ${obj.checker.name}, not realize.checker. Rendered anyway; not relabeled.`;
+      w.textContent = `This stamp was issued by ${obj.checker.name}, not realize.checker. Shown as-is.`;
       out.appendChild(w);
     }
     dispatch(out, obj);

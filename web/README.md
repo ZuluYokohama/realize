@@ -1,8 +1,25 @@
-# web/ — verdict theatre
+# web/ — public face of realize
 
-Renderer only. This directory is **not** the checker. It cannot mint `PASS`.
+This directory is **not** the checker. It cannot mint `PASS`.
 
-Public face of [`realize`](https://github.com/ZuluYokohama/realize): landing + certificate studio. Hash routes, static HTML/CSS/JS + SVG. GitHub Pages source: branch `main`, folder `/web`.
+A landing page and three worked examples, in plain language, with still-life art. Hash routes. Static HTML/CSS/JS. GitHub Pages source: branch `main`, folder `/web`.
+
+Art in `art/` is generated still-life (inspection bench, keys, paper half-planes, tiles, tags). It is illustration, not evidence.
+
+## Local
+
+```
+python3 scripts/serve_web.py
+```
+
+Open the site, then Examples → Three keys.
+
+## Fixtures
+
+```
+PYTHONPATH=src python3 scripts/export_web_fixtures.py
+```
+
 
 ## Local
 

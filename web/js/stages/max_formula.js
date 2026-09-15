@@ -1,4 +1,12 @@
-import { jsonEl, loadJSON, metaEl, panel, stampEl } from "../stamp.js";
+import {
+  engineerDrawer,
+  humanStamp,
+  jsonEl,
+  loadJSON,
+  metaEl,
+  panel,
+  storyHead,
+} from "../stamp.js";
 
 const FILES = {
   larger: "./fixtures/max_formula.larger.json",
@@ -9,37 +17,26 @@ const FILES = {
   unknown: "./fixtures/max_formula.unknown.json",
 };
 
-function halfplanes(identities) {
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("class", "ev");
-  svg.setAttribute("viewBox", "0 0 420 220");
-  svg.setAttribute("role", "img");
-  svg.innerHTML = `
-    <polygon points="20,20 200,20 200,200 20,200" fill="#12151a" stroke="#2a2e33"/>
-    <polygon points="200,20 200,200 20,200" fill="#161c1b" stroke="#2a9d8f"/>
-    <text x="110" y="36" text-anchor="middle" fill="#8b9088" font-size="11" font-family="IBM Plex Mono, monospace">a ≥ b</text>
-    <polygon points="220,20 400,20 400,200 220,200" fill="#12151a" stroke="#2a2e33"/>
-    <polygon points="220,20 400,20 400,200" fill="#161c1b" stroke="#2a9d8f"/>
-    <text x="310" y="36" text-anchor="middle" fill="#8b9088" font-size="11" font-family="IBM Plex Mono, monospace">b ≥ a</text>
-  `;
-  const a = identities?.a_ge_b;
-  const b = identities?.b_ge_a;
-  const t1 = document.createElementNS("http://www.w3.org/2000/svg", "text");
-  t1.setAttribute("x", "110");
-  t1.setAttribute("y", "120");
-  t1.setAttribute("text-anchor", "middle");
-  t1.setAttribute("fill", "#e6e2d8");
-  t1.setAttribute("font-size", "12");
-  t1.setAttribute("font-family", "IBM Plex Mono, monospace");
-  t1.textContent = a ? `want ${a.want.join(",")}  got ${a.got.join(",")}` : "";
-  const t2 = t1.cloneNode();
-  t2.setAttribute("x", "310");
-  t2.textContent = b ? `want ${b.want.join(",")}  got ${b.got.join(",")}` : "";
-  svg.append(t1, t2);
-  return svg;
-}
+const COPY = {
+  larger: "Always pick the larger of two numbers.",
+  smaller: "Always pick the smaller.",
+  midpoint: "Pick the midpoint.",
+  absdiff: "Pick the distance between them.",
+  affine: "Same job, but only with a too-simple catalog (no absolute value). Empty.",
+  unknown: "A phrase the inspector does not recognize. Not enough.",
+};
 
 export async function renderMaxFormula(root, cert) {
+  root.appendChild(
+    storyHead({
+      art: "./art/larger-number.jpg",
+      alt: "Two sheets of paper folded into half-planes with a teal thread along the fold.",
+      kicker: "Example · holds, empty, and not enough",
+      title: "Always pick the larger number",
+      body:
+        "The job is ordinary. The inspector searches a small catalog of formulas. For “larger,” a short formula holds. If you forbid the absolute-value piece, the catalog is empty. If you type a phrase it does not know, it stamps not enough — it does not guess.",
+    })
+  );
   const wrap = document.createElement("div");
   const switcher = document.createElement("div");
   switcher.className = "stages";
@@ -48,19 +45,20 @@ export async function renderMaxFormula(root, cert) {
     ["larger", "larger"],
     ["smaller", "smaller"],
     ["midpoint", "midpoint"],
-    ["absdiff", "absdiff"],
-    ["affine", "affine only"],
+    ["absdiff", "distance"],
+    ["affine", "too simple"],
     ["unknown", "unrecognized"],
   ];
-  let current = "larger";
+  const stage = document.createElement("div");
+  wrap.append(switcher, stage);
+  root.appendChild(wrap);
 
   async function show(key, fromCert) {
-    current = key;
     for (const b of switcher.querySelectorAll("button")) {
       b.classList.toggle("on", b.dataset.key === key);
     }
     const c = fromCert || (await loadJSON(FILES[key]));
-    mount(c);
+    mount(key, c);
   }
 
   for (const [key, label] of keys) {
@@ -71,45 +69,30 @@ export async function renderMaxFormula(root, cert) {
     b.addEventListener("click", () => show(key));
     switcher.appendChild(b);
   }
-  wrap.appendChild(switcher);
-  const stage = document.createElement("div");
-  wrap.appendChild(stage);
-  root.appendChild(wrap);
 
-  function mount(c) {
+  function mount(key, c) {
     stage.replaceChildren();
     const cols = document.createElement("div");
     cols.className = "columns";
-    const spec = {
-      grammar: "bounded_coeff_template",
-      phrase: c.witness?.phrase || c.spec_id,
-      template: "c0 + c1 a + c2 b + c3 |a-b|",
-    };
-    const ev = document.createElement("div");
-    if (c.witness?.identities) ev.appendChild(halfplanes(c.witness.identities));
-    else {
-      const p = document.createElement("p");
-      p.className = "caption";
-      p.textContent =
-        c.verdict === "UNSAT"
-          ? `Empty template. universe=${c.witness?.universe ?? "125"} valid=0`
-          : c.witness?.reason || "no identities on this plate";
-      ev.appendChild(p);
+    const job = document.createElement("p");
+    job.textContent = COPY[key];
+    const ev = document.createElement("p");
+    ev.className = "caption";
+    if (c.witness?.identities) {
+      ev.textContent = "A formula in the catalog matches both sides of the comparison.";
+    } else if (c.verdict === "UNSAT") {
+      ev.textContent = `Catalog size ${c.witness?.universe ?? 125}. Valid answers: 0.`;
+    } else {
+      ev.textContent = "The inspector will not invent a job from an unknown phrase.";
     }
     const right = document.createElement("div");
-    right.appendChild(stampEl(c.verdict));
+    right.appendChild(humanStamp(c.verdict));
     right.appendChild(metaEl(c));
-    cols.append(
-      panel("spec", jsonEl(spec)),
-      panel("evidence", ev),
-      panel("certificate", right)
-    );
+    cols.append(panel("the job", job), panel("what happened", ev), panel("the stamp", right));
     stage.appendChild(cols);
+    stage.appendChild(engineerDrawer("Technical record", jsonEl(c)));
   }
 
-  if (cert) {
-    await show("larger", cert);
-  } else {
-    await show("larger");
-  }
+  if (cert) await show("larger", cert);
+  else await show("larger");
 }

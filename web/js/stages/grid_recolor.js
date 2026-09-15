@@ -1,4 +1,12 @@
-import { jsonEl, loadJSON, metaEl, panel, stampEl } from "../stamp.js";
+import {
+  engineerDrawer,
+  humanStamp,
+  jsonEl,
+  loadJSON,
+  metaEl,
+  panel,
+  storyHead,
+} from "../stamp.js";
 
 const FILES = {
   recolor: "./fixtures/grid_recolor.pass.json",
@@ -24,23 +32,26 @@ function grid(m, { hit } = {}) {
   return el;
 }
 
-function arrow(text) {
-  const d = document.createElement("div");
-  d.className = "arrow";
-  d.textContent = text;
-  return d;
-}
-
 export async function renderGrid(root, cert) {
   const ctx = await loadJSON("./fixtures/grid_recolor.context.json");
+  root.appendChild(
+    storyHead({
+      art: "./art/recolor.jpg",
+      alt: "Ceramic tiles on a bench, some dark, some teal, one cracked amber.",
+      kicker: "Example · holds, empty, fails",
+      title: "Recolor a picture",
+      body:
+        "Take a small picture. Recolor the shape. That holds. Ask to keep every color count the same while recoloring: the catalog is empty. Do nothing at all: that answer fails.",
+    })
+  );
   const wrap = document.createElement("div");
   const switcher = document.createElement("div");
   switcher.className = "stages";
   switcher.style.marginBottom = "12px";
   const keys = [
     ["recolor", "recolor"],
-    ["histogram", "histogram"],
-    ["empty", "empty series"],
+    ["histogram", "keep colors"],
+    ["empty", "do nothing"],
   ];
   const stage = document.createElement("div");
   wrap.append(switcher, stage);
@@ -63,42 +74,33 @@ export async function renderGrid(root, cert) {
     switcher.appendChild(b);
   }
 
-  function maskOf(X) {
-    return X.map((row) => row.map((v) => (v === 0 ? 0 : 1)));
-  }
-
   function mount(key, c) {
     stage.replaceChildren();
     const cols = document.createElement("div");
     cols.className = "columns";
-    const spec = {
-      ops: key === "empty" ? [] : ["Extract", "Render2"],
-      K: key === "histogram" ? { preserve_histogram: true } : null,
-      X: ctx.X,
-    };
     const ev = document.createElement("div");
     ev.className = "flow";
     ev.appendChild(grid(ctx.X, { hit: key === "histogram" }));
-    ev.appendChild(arrow("Extract Grid→Mask"));
-    ev.appendChild(grid(maskOf(ctx.X)));
-    ev.appendChild(arrow("Render2 Mask→Grid"));
-    const y = c.witness?.Y || (key === "empty" ? ctx.X : c.witness?.expected);
+    const y = c.witness?.Y || (key === "empty" ? ctx.X : null);
     if (y) ev.appendChild(grid(y));
-    if (key === "histogram") {
-      const p = document.createElement("p");
-      p.className = "caption";
-      p.textContent = "Color-3 in X: 1. Color-3 required in Y: 0. Conjunction empty.";
-      ev.appendChild(p);
-    }
+    const note = document.createElement("p");
+    note.className = "caption";
+    note.textContent =
+      key === "histogram"
+        ? "The picture has one cell of color 3. Recoloring removes it. You cannot keep the histogram and recolor."
+        : key === "empty"
+          ? "Doing nothing leaves the picture unchanged. That is not a recolor."
+          : "Extract the shape, then paint it. The job holds.";
+    ev.appendChild(note);
     const right = document.createElement("div");
-    right.appendChild(stampEl(c.verdict));
+    right.appendChild(humanStamp(c.verdict));
     right.appendChild(metaEl(c));
     cols.append(
-      panel("spec", jsonEl(spec)),
-      panel("evidence", ev),
-      panel("certificate", right)
+      panel("the picture", ev),
+      panel("the stamp", right)
     );
     stage.appendChild(cols);
+    stage.appendChild(engineerDrawer("Technical record", jsonEl(c)));
   }
 
   if (cert) await show("recolor", cert);
