@@ -1,0 +1,34 @@
+{
+  "checker": {
+    "name": "realize.checker",
+    "version": "0.1.0"
+  },
+  "optimality": "proved",
+  "schema_version": "realize.v0",
+  "scope": {
+    "bound": {
+      "budget": 100,
+      "max_term_size": 4
+    },
+    "encoder_family": [],
+    "evidence_mode": "exhaustive_finite",
+    "grammar": "typed_grid",
+    "problem_family": "term_series"
+  },
+  "spec_digest": "sha256:89470a49df5c31bc8f38f44f92db2214d6ff17303b9ffe10b77a662406cab738",
+  "spec_id": "igvf.grid_recolor.histogram",
+  "verdict": "UNSAT",
+  "witness": {
+    "R_histogram": {
+      "0": 5,
+      "2": 4
+    },
+    "input_histogram": {
+      "0": 5,
+      "3": 1,
+      "4": 2,
+      "5": 1
+    },
+    "reason": "histogram_contradicts_R"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "checker": {
+    "name": "realize.checker",
+    "version": "0.1.0"
+  },
+  "optimality": "proved",
+  "schema_version": "realize.v0",
+  "scope": {
+    "bound": {
+      "affine_only": true,
+      "budget": 10000,
+      "max_term_size": 4
+    },
+    "encoder_family": [],
+    "evidence_mode": "exhaustive_finite",
+    "grammar": "bounded_coeff_template",
+    "problem_family": "formula"
+  },
+  "spec_digest": "sha256:d5a165823a427de64d119020a0031af01ea6183d34eb60a21f300186100f54c4",
+  "spec_id": "vcos.table2.larger.affine",
+  "verdict": "UNSAT",
+  "witness": {
+    "affine_only": true,
+    "examined": 125,
+    "phrase": "larger",
+    "reason": "empty_template",
+    "universe": 125
+  }
+}

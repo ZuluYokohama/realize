@@ -1,0 +1,17 @@
+{
+  "files": [
+    "three_state.certificate.json",
+    "max_formula.larger.json",
+    "max_formula.smaller.json",
+    "max_formula.midpoint.json",
+    "max_formula.absdiff.json",
+    "max_formula.affine_unsat.json",
+    "max_formula.unknown.json",
+    "grid_recolor.pass.json",
+    "grid_recolor.histogram_unsat.json",
+    "grid_recolor.empty_counterexample.json",
+    "grid_recolor.context.json"
+  ],
+  "generated_by": "scripts/export_web_fixtures.py",
+  "realize_version": "0.1.0"
+}

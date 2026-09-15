@@ -1,0 +1,26 @@
+{
+  "checker": {
+    "name": "realize.checker",
+    "version": "0.1.0"
+  },
+  "optimality": "unresolved",
+  "schema_version": "realize.v0",
+  "scope": {
+    "bound": {
+      "affine_only": false,
+      "budget": 10000,
+      "max_term_size": 4
+    },
+    "encoder_family": [],
+    "evidence_mode": "exhaustive_finite",
+    "grammar": "bounded_coeff_template",
+    "problem_family": "formula"
+  },
+  "spec_digest": "sha256:ee3362541a587df4a8f2fb244d06bcec1cf17ae74ab5032edfc5a62f7113690a",
+  "spec_id": "vcos.table2.unknown",
+  "verdict": "UNKNOWN",
+  "witness": {
+    "phrase": "not_a_declared_phrase",
+    "reason": "unrecognized_phrase"
+  }
+}

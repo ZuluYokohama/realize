@@ -1,0 +1,75 @@
+{
+  "candidate_digest": "sha256:7f2cf25e22065c5fdd7f887ba8c7f96e4d80e9e0a2ac403adff3fb9a24ef79bf",
+  "checker": {
+    "name": "realize.checker",
+    "version": "0.1.0"
+  },
+  "optimality": "not_requested",
+  "schema_version": "realize.v0",
+  "scope": {
+    "bound": {
+      "budget": 100,
+      "max_term_size": 4
+    },
+    "encoder_family": [],
+    "evidence_mode": "exhaustive_finite",
+    "grammar": "typed_grid",
+    "problem_family": "term_series"
+  },
+  "spec_digest": "sha256:15aa99731c759af10e420753981adea770108ca05eac57a8c08f3b2332b4578b",
+  "spec_id": "igvf.grid_recolor",
+  "verdict": "COUNTEREXAMPLE",
+  "witness": {
+    "expected": [
+      [
+        0,
+        2,
+        0
+      ],
+      [
+        2,
+        2,
+        0
+      ],
+      [
+        0,
+        0,
+        2
+      ]
+    ],
+    "got": [
+      [
+        0,
+        3,
+        0
+      ],
+      [
+        4,
+        4,
+        0
+      ],
+      [
+        0,
+        0,
+        5
+      ]
+    ],
+    "input": [
+      [
+        0,
+        3,
+        0
+      ],
+      [
+        4,
+        4,
+        0
+      ],
+      [
+        0,
+        0,
+        5
+      ]
+    ]
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "candidate_digest": "sha256:2ecbb43d0ec0f3a89154ba9b7736b1a71fd181a78f08c533d09e681ca359e1ba",
+  "checker": {
+    "name": "realize.checker",
+    "version": "0.1.0"
+  },
+  "optimality": "not_requested",
+  "schema_version": "realize.v0",
+  "scope": {
+    "bound": {
+      "affine_only": false,
+      "budget": 10000,
+      "max_term_size": 4
+    },
+    "encoder_family": [],
+    "evidence_mode": "exhaustive_finite",
+    "grammar": "bounded_coeff_template",
+    "problem_family": "formula"
+  },
+  "spec_digest": "sha256:7c86ceece43ab9a6d96a4c72c2d8a5b8dc9a8e04bcb96e4ab71c286f474fe4ce",
+  "spec_id": "vcos.table2.absdiff",
+  "verdict": "PASS",
+  "witness": {
+    "identities": {
+      "a_ge_b": {
+        "got": [
+          "0",
+          "1",
+          "-1"
+        ],
+        "match": true,
+        "want": [
+          "0",
+          "1",
+          "-1"
+        ]
+      },
+      "b_ge_a": {
+        "got": [
+          "0",
+          "-1",
+          "1"
+        ],
+        "match": true,
+        "want": [
+          "0",
+          "-1",
+          "1"
+        ]
+      }
+    },
+    "ok": true,
+    "phrase": "absdiff"
+  }
+}

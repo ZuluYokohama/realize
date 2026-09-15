@@ -1,0 +1,55 @@
+{
+  "candidate_digest": "sha256:e5a7f4e217878c9aedd324d2000bc2e94135b3cf121f52938f12ea98408023a9",
+  "checker": {
+    "name": "realize.checker",
+    "version": "0.1.0"
+  },
+  "optimality": "not_requested",
+  "schema_version": "realize.v0",
+  "scope": {
+    "bound": {
+      "affine_only": false,
+      "budget": 10000,
+      "max_term_size": 4
+    },
+    "encoder_family": [],
+    "evidence_mode": "exhaustive_finite",
+    "grammar": "bounded_coeff_template",
+    "problem_family": "formula"
+  },
+  "spec_digest": "sha256:aaad4a36d226ee75ceb11b2b934997def621ee48f1611c426234d1cca3c7fc53",
+  "spec_id": "vcos.table2.smaller",
+  "verdict": "PASS",
+  "witness": {
+    "identities": {
+      "a_ge_b": {
+        "got": [
+          "0",
+          "0",
+          "1"
+        ],
+        "match": true,
+        "want": [
+          "0",
+          "0",
+          "1"
+        ]
+      },
+      "b_ge_a": {
+        "got": [
+          "0",
+          "1",
+          "0"
+        ],
+        "match": true,
+        "want": [
+          "0",
+          "1",
+          "0"
+        ]
+      }
+    },
+    "ok": true,
+    "phrase": "smaller"
+  }
+}

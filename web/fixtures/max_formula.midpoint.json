@@ -1,0 +1,55 @@
+{
+  "candidate_digest": "sha256:75285ad3dbb713b27ea4650b6a7e3f28c9063da403319986f7e8ccf8f98859d8",
+  "checker": {
+    "name": "realize.checker",
+    "version": "0.1.0"
+  },
+  "optimality": "not_requested",
+  "schema_version": "realize.v0",
+  "scope": {
+    "bound": {
+      "affine_only": false,
+      "budget": 10000,
+      "max_term_size": 4
+    },
+    "encoder_family": [],
+    "evidence_mode": "exhaustive_finite",
+    "grammar": "bounded_coeff_template",
+    "problem_family": "formula"
+  },
+  "spec_digest": "sha256:b5c4b11ba4b86fe603f7e41f4e33f34a0f95faaef1ea1b98de9eea3e3e24df10",
+  "spec_id": "vcos.table2.midpoint",
+  "verdict": "PASS",
+  "witness": {
+    "identities": {
+      "a_ge_b": {
+        "got": [
+          "0",
+          "1/2",
+          "1/2"
+        ],
+        "match": true,
+        "want": [
+          "0",
+          "1/2",
+          "1/2"
+        ]
+      },
+      "b_ge_a": {
+        "got": [
+          "0",
+          "1/2",
+          "1/2"
+        ],
+        "match": true,
+        "want": [
+          "0",
+          "1/2",
+          "1/2"
+        ]
+      }
+    },
+    "ok": true,
+    "phrase": "midpoint"
+  }
+}

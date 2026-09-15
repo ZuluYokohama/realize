@@ -1,0 +1,45 @@
+{
+  "candidate_digest": "sha256:d006ca7705b834cccf98ad295928a028f50e464f28c5ca2b7e7c56f19191b44d",
+  "checker": {
+    "name": "realize.checker",
+    "version": "0.1.0"
+  },
+  "optimality": "not_requested",
+  "schema_version": "realize.v0",
+  "scope": {
+    "bound": {
+      "budget": 100,
+      "max_term_size": 4
+    },
+    "encoder_family": [],
+    "evidence_mode": "exhaustive_finite",
+    "grammar": "typed_grid",
+    "problem_family": "term_series"
+  },
+  "spec_digest": "sha256:15aa99731c759af10e420753981adea770108ca05eac57a8c08f3b2332b4578b",
+  "spec_id": "igvf.grid_recolor",
+  "verdict": "PASS",
+  "witness": {
+    "Y": [
+      [
+        0,
+        2,
+        0
+      ],
+      [
+        2,
+        2,
+        0
+      ],
+      [
+        0,
+        0,
+        2
+      ]
+    ],
+    "ops": [
+      "Extract",
+      "Render2"
+    ]
+  }
+}

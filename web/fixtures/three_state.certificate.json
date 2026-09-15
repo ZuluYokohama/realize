@@ -1,0 +1,33 @@
+{
+  "checker": {
+    "name": "realize.checker",
+    "version": "0.1.0"
+  },
+  "optimality": "proved",
+  "schema_version": "realize.v0",
+  "scope": {
+    "bound": {
+      "budget": 100,
+      "max_term_size": 8
+    },
+    "encoder_family": [
+      "collapse_all"
+    ],
+    "evidence_mode": "exhaustive_finite",
+    "grammar": "finite_case_table",
+    "problem_family": "encoder"
+  },
+  "spec_digest": "sha256:59e0a83691b58305f32d1416cb31b7ac5d9af0f3bba84cf2e50bc6745b0630cf",
+  "spec_id": "vcms.three_state",
+  "verdict": "UNSAT",
+  "witness": {
+    "obstructions": [
+      [
+        0,
+        1,
+        2
+      ]
+    ],
+    "reason": "no_adequate_encoder"
+  }
+}
