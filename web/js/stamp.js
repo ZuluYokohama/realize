@@ -126,7 +126,7 @@ export function overclaimPlate(modelSaid, cert) {
   const rk = document.createElement("p");
   rk.className = "kicker";
   rk.textContent = "The check said";
-  right.append(rk, humanStamp(cert.verdict), metaEl(cert));
+  right.append(rk, humanStamp(cert.verdict));
   cols.append(left, right);
   return cols;
 }

@@ -27,6 +27,45 @@ function person(name, accepts) {
   return el;
 }
 
+function daysTable() {
+  const days = ["Mon", "Tue", "Wed"];
+  const rows = [
+    ["Ava", [1, 1, 0]],
+    ["Ben", [0, 1, 1]],
+    ["Cy", [1, 0, 1]],
+    ["all three", [0, 0, 0]],
+  ];
+  const table = document.createElement("table");
+  table.className = "days";
+  const thead = document.createElement("thead");
+  const head = document.createElement("tr");
+  head.appendChild(document.createElement("th"));
+  for (const d of days) {
+    const th = document.createElement("th");
+    th.textContent = d;
+    head.appendChild(th);
+  }
+  thead.appendChild(head);
+  table.appendChild(thead);
+  const tbody = document.createElement("tbody");
+  for (const [name, marks] of rows) {
+    const tr = document.createElement("tr");
+    const n = document.createElement("th");
+    n.scope = "row";
+    n.textContent = name;
+    tr.appendChild(n);
+    for (const m of marks) {
+      const td = document.createElement("td");
+      td.textContent = m ? "yes" : "—";
+      td.className = m ? "yes" : "no";
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  return table;
+}
+
 export async function renderThreeState(root, cert) {
   if (!cert) cert = await loadJSON("./fixtures/three_state.certificate.json");
   root.appendChild(
@@ -36,7 +75,7 @@ export async function renderThreeState(root, cert) {
       kicker: "Overclaim · every pair works",
       title: "Every pair can meet. The group cannot.",
       body:
-        "Ask a model to find one time three people can meet. Ava can do Monday or Tuesday, Ben Tuesday or Wednesday, Cy Monday or Wednesday. Every pair has a day. There is no day for all three. Models report the pairs and call it done. The check stamps: nothing here works.",
+        "Every pair has a day. There is no day for all three. Models report the pairs and call it done.",
     })
   );
   const people = document.createElement("div");
@@ -51,7 +90,7 @@ export async function renderThreeState(root, cert) {
   meaning.textContent =
     "A shared day would have to sit in all three calendars. It doesn’t.";
   const job = document.createElement("div");
-  job.append(people, meaning);
+  job.append(people, daysTable(), meaning);
   const cols = document.createElement("div");
   cols.className = "columns";
   cols.append(panel("the calendars", job));

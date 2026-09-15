@@ -66,7 +66,7 @@ export async function renderMaxFormula(root, cert) {
       kicker: "Overclaim · it will still write the formula",
       title: "The easy job is not the point",
       body:
-        "Picking the bigger of 3 and 5 is not why this exists. Watch the other plates. Strip the toolbox: the model will still propose a rule; nothing in that toolbox works. Give it a job it does not recognize: it will still write a formula; the check says it can’t tell. It will not invent a job to look finished.",
+        "Picking the bigger of 3 and 5 is not why this exists. Strip the toolbox, or give it a job it does not know: it will still write a formula.",
     })
   );
   const wrap = document.createElement("div");

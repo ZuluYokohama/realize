@@ -39,17 +39,19 @@ export function renderPaste(root) {
   ta.className = "paste";
   ta.setAttribute("aria-label", "Stamp JSON from realize check");
   ta.placeholder = "Paste the JSON printed by: realize check spec.json candidate.json";
+  const actions = document.createElement("div");
+  actions.className = "paste-actions";
   const btn = document.createElement("button");
   btn.className = "enter";
-  btn.style.marginTop = "12px";
   btn.textContent = "Show the stamp";
   const out = document.createElement("div");
   out.style.marginTop = "20px";
-  btn.addEventListener("click", () => {
+
+  function showFrom(text) {
     out.replaceChildren();
     let obj;
     try {
-      obj = JSON.parse(ta.value);
+      obj = JSON.parse(text);
     } catch (err) {
       out.appendChild(adapterEl(`That is not JSON: ${err.message}`));
       return;
@@ -67,9 +69,7 @@ export function renderPaste(root) {
       return;
     }
     if (!looksLikeCertificate(obj)) {
-      out.appendChild(
-        adapterEl("A stamp needs verdict, spec_digest, and checker.name.")
-      );
+      out.appendChild(adapterEl("A stamp needs verdict, spec_digest, and checker.name."));
       return;
     }
     if (obj.checker.name !== "realize.checker") {
@@ -79,17 +79,19 @@ export function renderPaste(root) {
       out.appendChild(w);
     }
     dispatch(out, obj);
-  });
+  }
+
+  btn.addEventListener("click", () => showFrom(ta.value));
   const sample = document.createElement("button");
   sample.className = "enter";
-  sample.style.marginTop = "12px";
-  sample.style.marginLeft = "8px";
   sample.textContent = "Load a sample result";
   sample.addEventListener("click", async () => {
     const res = await fetch("./fixtures/three_state.certificate.json");
     ta.value = await res.text();
+    showFrom(ta.value);
   });
-  box.append(ta, btn, sample, out);
+  actions.append(btn, sample);
+  box.append(ta, actions, out);
   root.appendChild(box);
 }
 

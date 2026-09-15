@@ -17,3 +17,5 @@ jobs:
       - run: realize demo three_state
       - run: realize demo max_formula
       - run: realize demo grid_recolor
+      - run: python3 scripts/export_web_fixtures.py
+      - run: git diff --exit-code web/fixtures

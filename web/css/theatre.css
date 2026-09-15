@@ -389,13 +389,13 @@ textarea.paste {
 
 .grid3 {
   display: grid;
-  grid-template-columns: repeat(3, 44px);
+  grid-template-columns: repeat(3, 56px);
   gap: 4px;
 }
 
 .cell {
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -710,5 +710,49 @@ details.eng summary {
 @media (max-width: 700px) {
   .said {
     grid-template-columns: 1fr;
+  }
+}
+
+.paste-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.days {
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 13px;
+}
+
+.days th,
+.days td {
+  border: 1px solid var(--hair);
+  padding: 8px 12px;
+  text-align: center;
+  min-width: 48px;
+}
+
+.days th:first-child {
+  text-align: left;
+}
+
+.days td.yes {
+  color: var(--pass);
+}
+
+.days td.no {
+  color: var(--muted);
+}
+
+.days tr:last-child td.no {
+  color: var(--unsat);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story,
+  .enter {
+    transition: none;
   }
 }

@@ -24,11 +24,7 @@ function grid(m, { hit } = {}) {
       const c = document.createElement("div");
       c.className = `cell c${v}`;
       if (hit && v === 3) c.classList.add("hit");
-      const cap = document.createElement("span");
-      cap.style.opacity = "0.55";
-      cap.style.fontSize = "10px";
-      cap.textContent = String(v);
-      c.appendChild(cap);
+      c.setAttribute("aria-label", `color ${v}`);
       el.appendChild(c);
     }
   }
@@ -44,7 +40,7 @@ export async function renderGrid(root, cert) {
       kicker: "Overclaim · two easy jobs, stacked",
       title: "Recolor and keep every color",
       body:
-        "Recolor alone holds. That is the easy job. Ask for recolor and keep every color the same. Each sentence is easy. Together they are empty. A model will agree to both. The check stamps: nothing here works.",
+        "Recolor alone holds. Recolor and keep every color: each sentence is easy; together they are empty. A model will agree to both.",
     })
   );
   const wrap = document.createElement("div");
