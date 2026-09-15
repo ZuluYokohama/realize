@@ -4,7 +4,7 @@ Don’t take the AI’s word for it. Modern models will agree to two easy jobs t
 
 Independent checker for value-conditioned operator synthesis. Finite kernel. Four verdicts. Agents cannot grade themselves.
 
-**Read [NONCLAIMS.md](NONCLAIMS.md) first.** This package does not compile arbitrary English, does not beat SemGuS, and does not let an agent grade itself. Public theatre (render-only): [zuluyokohama.github.io/realize](https://zuluyokohama.github.io/realize/).
+**Read [NONCLAIMS.md](NONCLAIMS.md) first.** This package does not compile arbitrary English, does not beat SemGuS, and does not let an agent grade itself. Public theatre (render-only, in-repo until GitHub Pages is enabled): [web/](https://github.com/ZuluYokohama/realize/tree/main/web).
 
 ## 30 seconds
 

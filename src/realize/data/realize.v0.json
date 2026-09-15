@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/ZuluYokohama/realize/schema/realize.v0.json",
+  "$id": "https://raw.githubusercontent.com/ZuluYokohama/realize/main/schema/realize.v0.json",
   "title": "realize.v0 spec",
   "type": "object",
   "additionalProperties": false,
