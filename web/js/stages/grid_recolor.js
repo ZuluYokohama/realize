@@ -42,10 +42,10 @@ export async function renderGrid(root, cert) {
     storyHead({
       art: "./art/recolor.jpg",
       alt: "Ceramic tiles on a bench, some dark, some teal, one cracked amber.",
-      kicker: "Example · holds, impossible, wrong",
-      title: "Recolor a picture",
+      kicker: "Overclaim · two easy jobs, stacked",
+      title: "Recolor and keep every color",
       body:
-        "You asked an AI to recolor a tiny picture. Recolor holds. Recolor and keep every color the same is impossible. Doing nothing is not a recolor.",
+        "Recolor alone holds. That is the easy job. Ask for recolor and keep every color the same. Each sentence is easy. Together they are empty. A model will agree to both. The check stamps: nothing here works.",
     })
   );
   const wrap = document.createElement("div");
@@ -116,6 +116,13 @@ export async function renderGrid(root, cert) {
     stage.appendChild(engineerDrawer("Technical record", jsonEl(c)));
   }
 
-  if (cert) await show("recolor", cert);
-  else await show("recolor");
+  if (cert) {
+    const key =
+      cert.verdict === "UNSAT"
+        ? "histogram"
+        : cert.verdict === "COUNTEREXAMPLE"
+          ? "empty"
+          : "recolor";
+    await show(key, cert);
+  } else await show("histogram");
 }

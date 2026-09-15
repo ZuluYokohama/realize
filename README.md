@@ -1,6 +1,6 @@
 # realize
 
-Don’t take the AI’s word for it. realize is an independent check for answers that have a right and a wrong. The model may propose. It may not grade itself.
+Don’t take the AI’s word for it. Modern models will agree to two easy jobs that cannot both hold, and they will write a formula for a job they do not know. realize is an independent check. The model may propose. It may not grade itself.
 
 Independent checker for value-conditioned operator synthesis. Finite kernel. Four verdicts. Agents cannot grade themselves.
 

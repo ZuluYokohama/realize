@@ -26,9 +26,9 @@ function footer() {
 
 function studioChrome(stage) {
   const items = [
-    ["three_state", "Three people"],
-    ["max_formula", "Larger number"],
-    ["grid_recolor", "Recolor"],
+    ["three_state", "Every pair"],
+    ["max_formula", "It still writes it"],
+    ["grid_recolor", "Two jobs stacked"],
     ["paste", "Paste a result"],
   ];
   const links = items

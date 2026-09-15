@@ -55,10 +55,10 @@ export async function renderMaxFormula(root, cert) {
     storyHead({
       art: "./art/larger-number.jpg",
       alt: "Two sheets of paper folded together with a teal thread along the fold.",
-      kicker: "Example · holds, nothing works, can’t tell",
-      title: "Always pick the larger number",
+      kicker: "Overclaim · it will still write the formula",
+      title: "The easy job is not the point",
       body:
-        "You asked an AI for a rule that always takes the bigger number. Before you put that rule in a spreadsheet, check it. Here the short rule holds. A too-simple toolbox has no answer. An unknown job is not guessed.",
+        "Picking the bigger of 3 and 5 is not why this exists. Watch the other plates. Strip the toolbox: the model will still propose a rule; nothing in that toolbox works. Give it a job it does not recognize: it will still write a formula; the check says it can’t tell. It will not invent a job to look finished.",
     })
   );
   const wrap = document.createElement("div");
@@ -126,6 +126,9 @@ export async function renderMaxFormula(root, cert) {
     stage.appendChild(engineerDrawer("Technical record", jsonEl(c)));
   }
 
-  if (cert) await show("larger", cert);
-  else await show("larger");
+  if (cert) {
+    const key =
+      cert.verdict === "UNKNOWN" ? "unknown" : cert.verdict === "UNSAT" ? "affine" : "larger";
+    await show(key, cert);
+  } else await show("unknown");
 }
