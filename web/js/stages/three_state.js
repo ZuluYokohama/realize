@@ -1,9 +1,8 @@
 import {
   engineerDrawer,
-  humanStamp,
   jsonEl,
   loadJSON,
-  metaEl,
+  overclaimPlate,
   panel,
   storyHead,
 } from "../stamp.js";
@@ -53,13 +52,16 @@ export async function renderThreeState(root, cert) {
     "A shared day would have to sit in all three calendars. It doesn’t.";
   const job = document.createElement("div");
   job.append(people, meaning);
-  const right = document.createElement("div");
-  right.appendChild(humanStamp(cert.verdict));
-  right.appendChild(metaEl(cert));
   const cols = document.createElement("div");
   cols.className = "columns";
-  cols.append(panel("the job", job), panel("the result", right));
+  cols.append(panel("the calendars", job));
   root.appendChild(cols);
+  root.appendChild(
+    overclaimPlate(
+      "Every pair overlaps, so there is a day that works for the group. You’re covered.",
+      cert
+    )
+  );
   root.appendChild(
     engineerDrawer("Technical record", jsonEl({ id: "vcms.three_state", certificate: cert }))
   );

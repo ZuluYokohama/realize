@@ -659,3 +659,32 @@ details.eng summary {
     grid-template-columns: 1fr;
   }
 }
+
+.said {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--hair);
+  border: 1px solid var(--hair);
+  margin: 16px 0 20px;
+}
+
+.said-model,
+.said-check {
+  background: var(--panel);
+  padding: 18px 16px;
+  margin: 0;
+}
+
+.said-model p:last-child {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.45;
+  max-width: 36ch;
+}
+
+@media (max-width: 700px) {
+  .said {
+    grid-template-columns: 1fr;
+  }
+}

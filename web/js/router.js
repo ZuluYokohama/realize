@@ -9,7 +9,7 @@ function topbar(route) {
       <a class="mark" href="#/">realize</a>
       <nav class="nav">
         <a href="#/" ${route === "/" ? 'aria-current="page"' : ""}>What it is</a>
-        <a href="#/studio/three_state" ${route.startsWith("/studio") ? 'aria-current="page"' : ""}>See it work</a>
+        <a href="#/studio/three_state" ${route.startsWith("/studio") ? 'aria-current="page"' : ""}>See a model miss</a>
         <a href="#/nonclaims" ${route === "/nonclaims" ? 'aria-current="page"' : ""}>Limits</a>
       </nav>
     </header>`;
@@ -39,7 +39,7 @@ function studioChrome(stage) {
     .join("");
   return `${topbar("/studio")}
     <div class="studio-head">
-      <p class="mark">examples — display only</p>
+      <p class="mark">left column is typical fluent copy, not a live model</p>
       <nav class="stages">${links}</nav>
     </div>
     <div id="stage"></div>

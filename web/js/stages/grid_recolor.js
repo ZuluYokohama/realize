@@ -1,9 +1,8 @@
 import {
   engineerDrawer,
-  humanStamp,
   jsonEl,
   loadJSON,
-  metaEl,
+  overclaimPlate,
   panel,
   storyHead,
 } from "../stamp.js";
@@ -106,13 +105,17 @@ export async function renderGrid(root, cert) {
           ? "The picture is unchanged. That is not a recolor."
           : "Extract the shape, then paint it.";
     ev.appendChild(note);
-    const right = document.createElement("div");
-    right.appendChild(humanStamp(c.verdict));
-    right.appendChild(metaEl(c));
     const cols = document.createElement("div");
     cols.className = "columns";
-    cols.append(panel("the picture", ev), panel("the result", right));
+    cols.append(panel("the picture", ev));
     stage.appendChild(cols);
+    const said =
+      key === "histogram"
+        ? "Sure. Recolor it and keep every color count the same."
+        : key === "empty"
+          ? "Leave it. That counts as a recolor."
+          : "Recolor the shape. That holds.";
+    stage.appendChild(overclaimPlate(said, c));
     stage.appendChild(engineerDrawer("Technical record", jsonEl(c)));
   }
 

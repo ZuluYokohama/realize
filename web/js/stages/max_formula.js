@@ -1,9 +1,8 @@
 import {
   engineerDrawer,
-  humanStamp,
   jsonEl,
   loadJSON,
-  metaEl,
+  overclaimPlate,
   panel,
   storyHead,
 } from "../stamp.js";
@@ -48,6 +47,15 @@ const COPY = {
     what: "It does not know that job. It will not invent one.",
     pick: "—",
   },
+};
+
+const MODEL = {
+  larger: "Yes — always take the bigger. Done.",
+  smaller: "Yes — always take the smaller. Done.",
+  midpoint: "Average them. Done.",
+  absdiff: "Subtract and drop the sign. Done.",
+  affine: "A linear combination is enough. Here is the rule.",
+  unknown: "Here is a compact formula for that. You’re good to ship.",
 };
 
 export async function renderMaxFormula(root, cert) {
@@ -116,13 +124,11 @@ export async function renderMaxFormula(root, cert) {
     job.append(jp, nums);
     const what = document.createElement("p");
     what.textContent = copy.what;
-    const right = document.createElement("div");
-    right.appendChild(humanStamp(c.verdict));
-    right.appendChild(metaEl(c));
     const cols = document.createElement("div");
     cols.className = "columns";
-    cols.append(panel("the job", job), panel("what happened", what), panel("the result", right));
+    cols.append(panel("the job", job), panel("what is true", what));
     stage.appendChild(cols);
+    stage.appendChild(overclaimPlate(MODEL[key], c));
     stage.appendChild(engineerDrawer("Technical record", jsonEl(c)));
   }
 

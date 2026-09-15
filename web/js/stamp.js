@@ -109,3 +109,24 @@ export function humanStamp(verdict) {
   wrap.appendChild(note);
   return wrap;
 }
+
+export function overclaimPlate(modelSaid, cert) {
+  const cols = document.createElement("div");
+  cols.className = "said";
+  const left = document.createElement("blockquote");
+  left.className = "said-model";
+  const lk = document.createElement("p");
+  lk.className = "kicker";
+  lk.textContent = "A model said";
+  const lp = document.createElement("p");
+  lp.textContent = modelSaid;
+  left.append(lk, lp);
+  const right = document.createElement("div");
+  right.className = "said-check";
+  const rk = document.createElement("p");
+  rk.className = "kicker";
+  rk.textContent = "The check said";
+  right.append(rk, humanStamp(cert.verdict), metaEl(cert));
+  cols.append(left, right);
+  return cols;
+}
