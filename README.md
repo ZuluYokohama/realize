@@ -9,12 +9,14 @@ Independent checker for value-conditioned operator synthesis. Finite kernel. Fou
 ## 30 seconds
 
 ```bash
-pip install realize
+pip install git+https://github.com/ZuluYokohama/realize.git
 realize demo three_state
 realize demo max_formula
 realize demo grid_recolor
 realize check demos/three_state/spec.json candidate.json
 ```
+
+Not on PyPI yet. `pip install realize` will 404.
 
 `three_state` is supposed to be `UNSAT`: three inputs share one code and their acceptable sets `{0,1} ∩ {1,2} ∩ {0,2}` are empty. Pairwise intersections are nonempty. That is the point.
 
