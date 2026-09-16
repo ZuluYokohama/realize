@@ -156,6 +156,12 @@ textarea {
   margin: 6px 0;
 }
 
+.nonclaims p {
+  margin: 0 0 12px;
+  color: var(--muted);
+  max-width: 52ch;
+}
+
 .tiles {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

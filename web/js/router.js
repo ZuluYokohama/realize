@@ -58,7 +58,9 @@ function limits() {
         <li><strong>This is a checker, not a theory of mind.</strong></li>
         <li><strong>A proof about a model is not a measurement of the world.</strong></li>
         <li><strong>The AI may propose. It may not certify.</strong> This page cannot certify either.</li>
+        <li><strong>Geometry and field telemetry are not this program.</strong> They are in the papers.</li>
       </ol>
+      <p><a href="https://github.com/ZuluYokohama/realize/blob/main/papers/architecture.md">Layer map</a></p>
     </section>
     ${footer()}`;
 }
