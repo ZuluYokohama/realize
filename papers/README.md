@@ -5,7 +5,7 @@
 The theory of record for this repository:
 
 - [architecture.md](architecture.md) — layer map from *Formalizing Intent into Substance* onto what this package actually checks.
-- [agent-harness.md](agent-harness.md) — dual-channel agent loop; realize is the evidence channel; H1 is already the public demos.
+- [relational-section.md](relational-section.md) — certificate pattern for relational / dressing programs: no privileged viewpoint, no privileged proposer. Lattice DFM adapter is not shipped.
 
 Source manuscripts (session PDFs, not in git):
 
