@@ -41,7 +41,7 @@ Stdout is the certificate JSON. `realize synthesize` emits candidates only and n
 
 ## What v0 does not do
 
-See [NONCLAIMS.md](NONCLAIMS.md). No LLM proposer, no geometry, no sheaves, no `realize solve`. The finite kernel of the IGVF–CTS / VCMS architecture is mapped in [papers/architecture.md](papers/architecture.md).
+See [NONCLAIMS.md](NONCLAIMS.md). No LLM proposer, no geometry, no sheaves, no dressings, no `realize solve`. Architecture: [papers/architecture.md](papers/architecture.md). Relational certificate pattern (not a DFM solver): [papers/relational-section.md](papers/relational-section.md).
 
 ## Agent use
 

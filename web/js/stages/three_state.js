@@ -75,7 +75,7 @@ export async function renderThreeState(root, cert) {
       kicker: "Overclaim · every pair works",
       title: "Every pair can meet. The group cannot.",
       body:
-        "Every pair has a day. There is no day for all three. Models report the pairs and call it done.",
+        "Every pair has a day. There is no day for all three. Pairwise yes is not a global assignment. Models report the pairs and call it done.",
     })
   );
   const people = document.createElement("div");
@@ -88,7 +88,7 @@ export async function renderThreeState(root, cert) {
   const meaning = document.createElement("p");
   meaning.className = "caption";
   meaning.textContent =
-    "A shared day would have to sit in all three calendars. It doesn’t.";
+    "A shared day would have to sit in all three calendars. It doesn’t. That is no global section, written as a week.";
   const job = document.createElement("div");
   job.append(people, daysTable(), meaning);
   const cols = document.createElement("div");

@@ -76,4 +76,6 @@ A 0% hard-constraint violation rate on these fixtures is the test. An unconstrai
 
 ## What not to build into the pip package
 
-MCTS on `g_v`, GUDHI, knowledge-graph `Φ`, Z3 as grader, ASTAC ingestion, “transcendental error” as a fifth verdict. Those may exist as **untrusted adapters** that output candidates or `UNKNOWN`. They never output PASS.
+MCTS on `g_v`, GUDHI, knowledge-graph `Φ`, Z3 as grader, ASTAC ingestion, “transcendental error” as a fifth verdict, Dressing Field Method, holonomy. Those may exist as **untrusted adapters** that output candidates or `UNKNOWN`. They never output PASS.
+
+Relational C1–C3 (invariance, change-of-tree, fibre adequacy) is the certificate *pattern* in [relational-section.md](relational-section.md). Only C3 is in v0 (`three_state`).

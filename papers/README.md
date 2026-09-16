@@ -15,4 +15,4 @@ Source manuscripts (session PDFs, not in git):
 
 The public object of this repository is the independent checker: hard constraints, fibres, typed terms, four verdicts, preference cannot rewrite evidence.
 
-Not in this package: conformal value metrics, persistent homology, knowledge-graph `Φ`, schematism, SMT proposers, ASTAC telemetry, geometric LNNs. See [NONCLAIMS.md](../NONCLAIMS.md).
+Not in this package: conformal value metrics, persistent homology, knowledge-graph `Φ`, schematism, SMT proposers, ASTAC telemetry, geometric LNNs, Dressing Field Method, holonomy. See [NONCLAIMS.md](../NONCLAIMS.md).

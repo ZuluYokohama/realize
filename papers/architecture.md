@@ -45,12 +45,13 @@ That is why the public demos are overclaims, not “can a model pick max(a, b).�
 | ASTAC drilling telemetry | No | papers only; operator data stays out |
 | ARC-style grid recolor | Yes, 3×3 finite kernel | `grid_recolor` |
 | Geometric LNNs / symplectic cache | No | papers only |
+| Dressing Field Method, holonomy, lattice gauge | No. Certificate *pattern* only | [relational-section.md](relational-section.md) |
 
 ## Public demos as kernel instances
 
 | Demo | Manuscript object | Verdict the page shows |
 |---|---|---|
-| Every pair / three_state | Fibre intersection empty; pairwise nonempty | Nothing here works (`UNSAT`) |
+| Every pair / three_state | Fibre intersection empty; pairwise nonempty; **no global section** | Nothing here works (`UNSAT`) |
 | Recolor and keep every color | Contradictory `R` and `K` (histogram) | Nothing here works (`UNSAT`) |
 | Unknown formula | Unresolved intent `U`; no invented `R` | Can’t tell (`UNKNOWN`) |
 | Affine-only toolbox | Empty `Sol_B` at the declared grammar | Nothing here works (`UNSAT`) |

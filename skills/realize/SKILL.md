@@ -17,7 +17,7 @@ Loop:
 6. On `UNKNOWN`: halt. Do not relabel. Do not ask another model to be more confident.
 7. On `PASS`: the certificate is the claim. Nothing else is.
 
-The seven-phase IGVF–CTS harness (conformal search, schematism, `Φ`, SMT, ASTAC) is specified in `papers/agent-harness.md`. This package implements phases 1, 2, and 7 as a finite kernel. You must not pretend the rest is running.
+The seven-phase IGVF–CTS harness (conformal search, schematism, `Φ`, SMT, ASTAC) is specified in `papers/agent-harness.md`. Relational / DFM lattice dressings are specified as a *pattern* in `papers/relational-section.md` and are **not implemented**. This package implements phases 1, 2, and 7 as a finite kernel. You must not pretend the rest is running. You must not claim a holonomy or a dressed observable.
 
 Read `NONCLAIMS.md` before claiming anything.
 
