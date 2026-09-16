@@ -5,9 +5,21 @@ description: Independent checker for value-conditioned operator synthesis. Load 
 
 # realize
 
-Finite kernel. Fail-closed. Agents cannot grade themselves.
+You are the **preference channel**. `realize check` is the **evidence channel**. Generation, planning, and verification are not the same module.
 
-Read `NONCLAIMS.md` in this repository before claiming anything.
+Loop:
+
+1. Write `spec.json` (`realize.v0`). Hard constraints and preferences stay distinct.
+2. Optionally `realize synthesize spec.json` — candidates only, never a `verdict`.
+3. Always `realize check spec.json candidate.json` before claiming anything. Paste stdout.
+4. On `COUNTEREXAMPLE`: keep the witness; do not retry-until-PASS.
+5. On `UNSAT`: revise the spec or the grammar; do not invent a compromise that violates `R`/`K`.
+6. On `UNKNOWN`: halt. Do not relabel. Do not ask another model to be more confident.
+7. On `PASS`: the certificate is the claim. Nothing else is.
+
+The seven-phase IGVF–CTS harness (conformal search, schematism, `Φ`, SMT, ASTAC) is specified in `papers/agent-harness.md`. This package implements phases 1, 2, and 7 as a finite kernel. You must not pretend the rest is running.
+
+Read `NONCLAIMS.md` before claiming anything.
 
 ## When to load
 

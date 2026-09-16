@@ -10,6 +10,8 @@ The manuscript *Formalizing Intent into Substance: The Information-Geometric Val
 
 `realize` is **not** that whole stack. It is the **evidence channel and finite kernel** of it: an independent checker that cannot be talked into a yes.
 
+The agent that uses this kernel is specified in [agent-harness.md](agent-harness.md): dual-channel loop, four hypotheses, what v0 can already falsify.
+
 Read [NONCLAIMS.md](../NONCLAIMS.md) first.
 
 ## Preference vs evidence
