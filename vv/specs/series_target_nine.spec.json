@@ -1,0 +1,27 @@
+{
+  "schema_version": "realize.v0",
+  "id": "vcos.series.target_nine",
+  "problem_family": "term_series",
+  "context": {
+    "semantics": "finite_integer",
+    "q0": 0,
+    "cap": 8,
+    "Y_target": 9
+  },
+  "specification": {
+    "R": {"target": 9},
+    "K": {"invariant": "in_S"},
+    "preferences": ["min_length"],
+    "evidence_mode": "exhaustive_finite",
+    "provenance": [
+      {"clause": "R", "source": "VCOS §8.3 — target above the cap"},
+      {"clause": "K", "source": "VCOS §8.3 — state stays in [0, cap] at every step"}
+    ]
+  },
+  "library": {
+    "encoders": [],
+    "primitives": [{"id": "add1"}, {"id": "add3"}, {"id": "double"}],
+    "grammar": "guarded_integer_sequence"
+  },
+  "bound": {"budget": 10000, "horizon": 4, "max_term_size": 4}
+}

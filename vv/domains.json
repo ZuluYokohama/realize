@@ -1,0 +1,202 @@
+{
+  "schema_version": "realize.vv.v0",
+  "note": "Verification & validation matrix. Dev-only. This file cannot mint a verdict; it only declares what each domain must be observed to do. See VV.md.",
+  "domains": [
+    {
+      "id": "formula.bounded_coeff_template",
+      "problem_family": "formula",
+      "grammar": "bounded_coeff_template",
+      "semantics": "exact_rational",
+      "source": "VCOS §8.1 / Table 2",
+      "cases": [
+        {
+          "id": "larger.pass",
+          "entry": "cli",
+          "spec": "demos/max_formula/spec.json",
+          "candidate": "vv/candidates/formula_larger.pass.json",
+          "expect": {"outcome": "PASS", "exit": 0},
+          "why": "(0, 1/2, 1/2, 1/2) meets the target affine form on both half-planes"
+        },
+        {
+          "id": "larger.counterexample",
+          "entry": "cli",
+          "spec": "demos/max_formula/spec.json",
+          "candidate": "vv/candidates/formula_larger.counterexample.json",
+          "expect": {"outcome": "COUNTEREXAMPLE", "exit": 2},
+          "why": "the tuple for 'smaller' does not realize 'larger'"
+        },
+        {
+          "id": "affine_only.unsat",
+          "entry": "library",
+          "spec": "vv/specs/formula_affine_only.spec.json",
+          "expect": {"outcome": "UNSAT", "exit": 3},
+          "why": "no affine tuple realizes 'larger'; the declared class is empty at this grammar"
+        },
+        {
+          "id": "unrecognized_phrase.unknown",
+          "entry": "library",
+          "spec": "vv/specs/formula_unrecognized_phrase.spec.json",
+          "expect": {"outcome": "UNKNOWN", "exit": 4},
+          "why": "no R is invented from English; NONCLAIMS §1"
+        },
+        {
+          "id": "digest_mismatch.adapter",
+          "entry": "cli",
+          "spec": "demos/max_formula/spec.json",
+          "candidate": "vv/candidates/formula_larger.digest_mismatch.json",
+          "expect": {"outcome": "adapter", "exit": 1},
+          "why": "a candidate bound to a different spec is refused, not judged"
+        }
+      ]
+    },
+    {
+      "id": "encoder.finite_case_table",
+      "problem_family": "encoder",
+      "grammar": "finite_case_table",
+      "semantics": "finite_relation",
+      "source": "VCMS Example 4.3",
+      "cases": [
+        {
+          "id": "separating.pass",
+          "entry": "cli",
+          "spec": "vv/specs/encoder_separating.spec.json",
+          "candidate": "vv/candidates/encoder_separating.pass.json",
+          "expect": {"outcome": "PASS", "exit": 0},
+          "why": "every fibre is a singleton, so the decoder can honour each acceptable set"
+        },
+        {
+          "id": "separating.counterexample",
+          "entry": "cli",
+          "spec": "vv/specs/encoder_separating.spec.json",
+          "candidate": "vv/candidates/encoder_separating.counterexample.json",
+          "expect": {"outcome": "COUNTEREXAMPLE", "exit": 2},
+          "why": "row a emits 2, which is outside A(0) = {0, 1}"
+        },
+        {
+          "id": "three_state.unsat",
+          "entry": "cli",
+          "spec": "demos/three_state/spec.json",
+          "candidate": "demos/three_state/candidate.json",
+          "expect": {"outcome": "UNSAT", "exit": 3},
+          "why": "one fibre carries all three inputs and their acceptable sets meet in the empty set"
+        },
+        {
+          "id": "zero_budget.unknown",
+          "entry": "library",
+          "spec": "vv/specs/encoder_zero_budget.spec.json",
+          "expect": {"outcome": "UNKNOWN", "exit": 4},
+          "why": "zero budget is UNKNOWN, never UNSAT; NONCLAIMS §2"
+        },
+        {
+          "id": "digest_mismatch.adapter",
+          "entry": "cli",
+          "spec": "vv/specs/encoder_separating.spec.json",
+          "candidate": "vv/candidates/encoder_separating.digest_mismatch.json",
+          "expect": {"outcome": "adapter", "exit": 1},
+          "why": "a candidate bound to a different spec is refused, not judged"
+        }
+      ]
+    },
+    {
+      "id": "term_series.typed_grid",
+      "problem_family": "term_series",
+      "grammar": "typed_grid",
+      "semantics": "finite_integer",
+      "source": "IGVF-CTS §7.1",
+      "cases": [
+        {
+          "id": "recolor.pass",
+          "entry": "cli",
+          "spec": "demos/grid_recolor/spec.json",
+          "candidate": "vv/candidates/grid_recolor.pass.json",
+          "expect": {"outcome": "PASS", "exit": 0},
+          "why": "Extract then Render2 is well-typed Grid to Grid and meets R"
+        },
+        {
+          "id": "empty_series.counterexample",
+          "entry": "cli",
+          "spec": "demos/grid_recolor/spec.json",
+          "candidate": "vv/candidates/grid_recolor.counterexample.json",
+          "expect": {"outcome": "COUNTEREXAMPLE", "exit": 2},
+          "why": "the empty series is well-typed but leaves the grid uncoloured"
+        },
+        {
+          "id": "preserve_histogram.unsat",
+          "entry": "library",
+          "spec": "vv/specs/grid_preserve_histogram.spec.json",
+          "expect": {"outcome": "UNSAT", "exit": 3},
+          "why": "K asks the colour counts to be kept and R asks them to change"
+        },
+        {
+          "id": "zero_budget.unknown",
+          "entry": "library",
+          "spec": "vv/specs/grid_zero_budget.spec.json",
+          "expect": {"outcome": "UNKNOWN", "exit": 4},
+          "why": "zero budget is UNKNOWN, never UNSAT; NONCLAIMS §2"
+        },
+        {
+          "id": "digest_mismatch.adapter",
+          "entry": "cli",
+          "spec": "demos/grid_recolor/spec.json",
+          "candidate": "vv/candidates/grid_recolor.digest_mismatch.json",
+          "expect": {"outcome": "adapter", "exit": 1},
+          "why": "a candidate bound to a different spec is refused, not judged"
+        }
+      ]
+    },
+    {
+      "id": "term_series.guarded_integer_sequence",
+      "problem_family": "term_series",
+      "grammar": "guarded_integer_sequence",
+      "semantics": "finite_integer",
+      "source": "VCOS §8.3",
+      "cases": [
+        {
+          "id": "seven.pass",
+          "entry": "cli",
+          "spec": "vv/specs/series_seven.spec.json",
+          "candidate": "vv/candidates/series_seven.pass.json",
+          "expect": {"outcome": "PASS", "exit": 0},
+          "why": "add3, double, add1 walks 0 to 3 to 6 to 7 and never leaves [0, 8]"
+        },
+        {
+          "id": "seven.counterexample",
+          "entry": "cli",
+          "spec": "vv/specs/series_seven.spec.json",
+          "candidate": "vv/candidates/series_seven.counterexample.json",
+          "expect": {"outcome": "COUNTEREXAMPLE", "exit": 2},
+          "why": "the third step would take the state to 12, outside the guard"
+        },
+        {
+          "id": "even_repertoire.unsat",
+          "entry": "library",
+          "spec": "vv/specs/series_even_repertoire.spec.json",
+          "expect": {"outcome": "UNSAT", "exit": 3},
+          "why": "add2 and double keep the state even, so an odd target is unreachable"
+        },
+        {
+          "id": "target_nine.unsat",
+          "entry": "library",
+          "spec": "vv/specs/series_target_nine.spec.json",
+          "expect": {"outcome": "UNSAT", "exit": 3},
+          "why": "the target is above the cap, so the guard rules it out before search"
+        },
+        {
+          "id": "zero_budget.unknown",
+          "entry": "library",
+          "spec": "vv/specs/series_zero_budget.spec.json",
+          "expect": {"outcome": "UNKNOWN", "exit": 4},
+          "why": "zero budget is UNKNOWN, never UNSAT; NONCLAIMS §2"
+        },
+        {
+          "id": "digest_mismatch.adapter",
+          "entry": "cli",
+          "spec": "vv/specs/series_seven.spec.json",
+          "candidate": "vv/candidates/series_seven.digest_mismatch.json",
+          "expect": {"outcome": "adapter", "exit": 1},
+          "why": "a candidate bound to a different spec is refused, not judged"
+        }
+      ]
+    }
+  ]
+}

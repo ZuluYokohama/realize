@@ -1,5 +1,11 @@
 name: ci
 on: [push, pull_request]
+
+# Every job here only reads the checkout. Artifact upload uses the runtime
+# token, not this one, so read is enough.
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -12,10 +18,74 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: pip install -e ".[dev]"
-      - run: ruff check src tests
+      - run: ruff check src tests scripts/vv.py
       - run: pytest
       - run: realize demo three_state
       - run: realize demo max_formula
       - run: realize demo grid_recolor
       - run: python3 scripts/export_web_fixtures.py
       - run: git diff --exit-code web/fixtures
+
+  vv:
+    # Verification & validation across every declared domain. See VV.md.
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        domain:
+          - formula.bounded_coeff_template
+          - encoder.finite_case_table
+          - term_series.typed_grid
+          - term_series.guarded_integer_sequence
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - run: python3 scripts/vv.py --domain ${{ matrix.domain }} --report vv-report.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vv-report-${{ matrix.domain }}
+          path: vv-report.json
+
+  vv-lean:
+    # Independent corroboration of the finite facts. Lean agrees or disagrees;
+    # it never mints a verdict. A red job here means Lean and the Python kernel
+    # disagree, and one of them is wrong.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - name: cache lean toolchain
+        uses: actions/cache@v4
+        with:
+          path: ~/.elan
+          key: elan-${{ runner.os }}-${{ hashFiles('vv/lean/lean-toolchain') }}
+      - name: install lean
+        # Pinned to an immutable revision and checksummed before it is executed.
+        # `master` is mutable, and this job runs on pull_request.
+        env:
+          ELAN_REV: 0e36a07b9bbcc5381fa6250df109f9a4f94d7bac
+          ELAN_SHA256: a620ff1641616222c8d37c54845492004bb84d6877cdbc944dd65c1aa685bf53
+        run: |
+          set -euo pipefail
+          if [ ! -x "$HOME/.elan/bin/lean" ]; then
+            curl -sSfL \
+              "https://raw.githubusercontent.com/leanprover/elan/${ELAN_REV}/elan-init.sh" \
+              -o /tmp/elan-init.sh
+            echo "${ELAN_SHA256}  /tmp/elan-init.sh" | sha256sum -c -
+            sh /tmp/elan-init.sh -y --default-toolchain "$(tr -d '[:space:]' < vv/lean/lean-toolchain)"
+          fi
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - run: lean --version
+      - run: python3 scripts/vv.py --lean-required --report vv-report-lean.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vv-report-lean
+          path: vv-report-lean.json

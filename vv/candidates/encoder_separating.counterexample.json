@@ -1,0 +1,14 @@
+{
+  "schema_version": "realize.v0",
+  "spec_id": "vv.encoder.separating",
+  "spec_digest": "sha256:81ca6e1eb763ed82d74a6e0cb13843423d6d772fdbfe691309f876dc51753e05",
+  "term": {
+    "kind": "case_table",
+    "encoder_id": "separate_all",
+    "table": {
+      "a": 2,
+      "b": 1,
+      "c": 0
+    }
+  }
+}

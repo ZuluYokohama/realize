@@ -1,0 +1,25 @@
+{
+  "schema_version": "realize.v0",
+  "id": "vv.formula.unrecognized_phrase",
+  "problem_family": "formula",
+  "context": {
+    "semantics": "exact_rational"
+  },
+  "specification": {
+    "R": {"phrase": "mostly_bigger_ish"},
+    "K": null,
+    "preferences": [],
+    "evidence_mode": "exhaustive_finite",
+    "provenance": [{"clause": "R", "source": "no source: the phrase is deliberately outside the declared set (NONCLAIMS.md §1)"}]
+  },
+  "library": {
+    "encoders": [],
+    "primitives": [{"id": "add"}, {"id": "sub"}, {"id": "abs"}, {"id": "scale"}],
+    "grammar": "bounded_coeff_template"
+  },
+  "bound": {
+    "affine_only": false,
+    "budget": 10000,
+    "max_term_size": 4
+  }
+}

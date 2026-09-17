@@ -1,0 +1,13 @@
+{
+  "schema_version": "realize.v0",
+  "spec_id": "vcos.series.seven",
+  "spec_digest": "sha256:02d15e3731ea4a971c8446a7dc32d679ea9bf788b68eb252908e6285cc5d4ec1",
+  "term": {
+    "kind": "sequence",
+    "ops": [
+      "add3",
+      "double",
+      "double"
+    ]
+  }
+}

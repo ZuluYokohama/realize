@@ -43,6 +43,34 @@ Stdout is the certificate JSON. `realize synthesize` emits candidates only and n
 
 See [NONCLAIMS.md](NONCLAIMS.md). No LLM proposer, no geometry, no sheaves, no dressings, no `realize solve`. Architecture: [papers/architecture.md](papers/architecture.md). Relational certificate pattern (not a DFM solver): [papers/relational-section.md](papers/relational-section.md).
 
+## Verification & validation
+
+Four domains, where a domain is a `problem_family` paired with a `grammar`:
+
+| Domain | Semantics | Source |
+|---|---|---|
+| `formula.bounded_coeff_template` | `exact_rational` | VCOS §8.1 / Table 2 |
+| `encoder.finite_case_table` | `finite_relation` | VCMS Example 4.3 |
+| `term_series.typed_grid` | `finite_integer` | IGVF–CTS §7.1 |
+| `term_series.guarded_integer_sequence` | `finite_integer` | VCOS §8.3 |
+
+```bash
+python3 scripts/vv.py          # every domain
+python3 scripts/vv.py --lean   # add the Lean corroboration
+```
+
+Every domain has to be *seen* reaching all four verdicts and an adapter reject — a domain that can
+only be shown passing is a domain nobody has watched fail. Coverage is read out of
+`realize.verdicts`, so a grammar added to the kernel breaks the run until a domain arrives with it.
+
+[`vv/lean/`](vv/lean/) re-states the same finite facts in Lean 4 and proves them with kernel-checked
+`decide` — core Lean, no Mathlib, no `native_decide`, no `sorry`. The runner then recomputes all 29
+reported quantities from the Python kernel and compares. That is what catches a frozen count edited
+to match a drifting kernel. Lean agrees or disagrees. It never mints a verdict.
+
+This is verification. It is not validation: whether a formal `R` matches anyone's intention stays
+open, and no green run closes it. [VV.md](VV.md), then [NONCLAIMS.md](NONCLAIMS.md) §10–11.
+
 ## Agent use
 
 Load the skill. Propose if you must. Then:
@@ -74,7 +102,8 @@ Tools: `realize_check`, `realize_synthesize`, `realize_explain`, `realize_demo`.
 ```bash
 pip install -e ".[dev]"
 pytest
-ruff check src tests
+ruff check src tests scripts/vv.py
+python3 scripts/vv.py
 ```
 
 Python ≥ 3.11. Core extra is stdlib-only.

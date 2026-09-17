@@ -1,0 +1,12 @@
+{
+  "schema_version": "realize.v0",
+  "spec_id": "igvf.grid_recolor",
+  "spec_digest": "sha256:15aa99731c759af10e420753981adea770108ca05eac57a8c08f3b2332b4578b",
+  "term": {
+    "kind": "sequence",
+    "ops": [
+      "Extract",
+      "Render2"
+    ]
+  }
+}
