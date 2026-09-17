@@ -26,6 +26,7 @@ def _load_runner():
 
 
 vv = _load_runner()
+provenance_gaps = vv.provenance_gaps
 CONFIG = json.loads((ROOT / "vv" / "domains.json").read_text(encoding="utf-8"))
 DOMAINS = CONFIG["domains"]
 IDS = [d["id"] for d in DOMAINS]
@@ -63,3 +64,47 @@ def test_domain_reaches_all_four_verdicts_and_the_adapter(domain):
     """Four verdicts plus adapter reject, in every domain. No domain gets a pass on one."""
     reached = {c["expect"]["outcome"] for c in domain["cases"]}
     assert reached >= vv.OUTCOMES, sorted(vv.OUTCOMES - reached)
+
+
+def _spec(provenance, *, k=None):
+    return {"R": {"phrase": "larger"}, "K": k, "provenance": provenance}
+
+
+def test_provenance_accepts_a_named_origin():
+    assert provenance_gaps("s", _spec([{"clause": "R", "source": "VCOS §8.1 Table 2"}])) == []
+
+
+def test_provenance_rejects_a_repo_document_as_an_origin():
+    """The gate exists because a citation that does not cite still looks like one.
+
+    Four specs in the first version of this matrix cited NONCLAIMS.md — which explains
+    why a zero budget yields UNKNOWN — as the source of the relation in R. A reviewer
+    caught it; the gate could not. Now it can.
+    """
+    gaps = provenance_gaps("s", _spec([{"clause": "R", "source": "NONCLAIMS.md §2"}]))
+    assert len(gaps) == 1
+    assert "NONCLAIMS.md" in gaps[0]
+
+
+def test_provenance_rejects_a_blank_source():
+    assert provenance_gaps("s", _spec([{"clause": "R", "source": "   "}])) != []
+    assert provenance_gaps("s", _spec([{"clause": "R"}])) != []
+
+
+def test_provenance_rejects_a_constraining_clause_that_cites_nothing():
+    gaps = provenance_gaps("s", _spec([{"clause": "R", "source": "VCOS §8.1"}], k={"inv": "x"}))
+    assert any("K constrains but cites nothing" in g for g in gaps)
+
+
+def test_provenance_allows_a_declared_absence_of_origin():
+    """`unsourced` is a bypass. It is meant to be one, and meant to be visible."""
+    entry = {"clause": "R", "unsourced": True, "source": "deliberately outside the declared set"}
+    assert provenance_gaps("s", _spec([entry])) == []
+
+
+def test_shipped_specs_carry_no_provenance_gaps():
+    for path in sorted((ROOT / "vv" / "specs").glob("*.json")) + sorted(
+        (ROOT / "demos").glob("*/spec.json")
+    ):
+        spec = json.loads(path.read_text(encoding="utf-8"))
+        assert provenance_gaps(path.name, spec["specification"]) == []

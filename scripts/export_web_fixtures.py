@@ -7,12 +7,15 @@ import json
 import sys
 from pathlib import Path
 
+try:
+    from realize import __version__
+    from realize.demos import load_demo_spec, run_demo
+except ModuleNotFoundError:  # a bare checkout, before `pip install -e ".[dev]"`
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+    from realize import __version__
+    from realize.demos import load_demo_spec, run_demo
+
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
-
-from realize import __version__  # noqa: E402
-from realize.demos import load_demo_spec, run_demo  # noqa: E402
-
 
 OUT = ROOT / "web" / "fixtures"
 

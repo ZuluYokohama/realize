@@ -82,7 +82,30 @@ Per domain:
 | `outcome_coverage` | The domain is seen reaching `PASS`, `COUNTEREXAMPLE`, `UNSAT`, `UNKNOWN`, and adapter reject. All five. |
 | `tamper_evidence` | Change one field of the spec, and the passing candidate becomes an adapter reject. |
 | `no_self_grading` | `realize synthesize` returns candidates and no `verdict`, anywhere in the payload. |
-| `provenance` | Every non-null `R` and `K` clause cites a source. |
+| `provenance` | Every non-null `R` and `K` clause names an origin, or declares with `unsourced` that it has none. |
+
+### What `provenance` can and cannot decide
+
+Three things about a citation are decidable, and the objective checks all three: that a clause
+which constrains is cited at all, that the citation is not blank, and that it does not point at
+one of this repository's own documents. `NONCLAIMS.md`, `README.md` and `VV.md` explain what the
+package does and refuses to claim; none of them is ever where a clause came from.
+
+That third rule is not hypothetical. Four specs in the first version of this matrix cited
+`NONCLAIMS.md §2` — the section explaining why a zero budget yields `UNKNOWN` — as the source of
+the relation in `R`. The gate passed them, because a citation that does not cite still looks like
+a citation. A reviewer caught it; the gate could not. It can now, and
+`tests/test_vv.py` keeps that specific failure caught.
+
+**What stays undecidable: whether a source names anything real.** `VCOS §8.1 Table 2` and `asdf`
+are the same shape, and nothing in a finite checker tells them apart. A clause with no origin
+declares that with `"unsourced": true`, and the gate takes the author's word for it — so that
+marker is a bypass, deliberately a visible one. Counting the `unsourced` clauses in `vv/specs/` is
+a minute's work for a person; noticing a plausible-looking citation that names nothing is not.
+
+This is V₂ reaching into a V₁ check, and it does not close. What the objective changed is where
+the gap sits: it used to hide inside citations that looked fine, and now it sits in a marker you
+can grep for. Countable is the most a finite checker can make it.
 
 `outcome_coverage` is the one worth reading twice. Every domain must be *observed* reaching all four
 verdicts and the adapter reject — not merely be capable of it in principle. A domain that can only
@@ -128,7 +151,9 @@ red and one of them is wrong — the job does not say which.
 
 ## What this does not establish
 
-1. That `R` means what anyone intended. That is V₂, and it stays open. NONCLAIMS §7.
+1. That `R` means what anyone intended. That is V₂, and it stays open. NONCLAIMS §7. The
+   `provenance` objective checks the *form* of a citation, never that it names something real —
+   see above.
 2. That a `PASS` says anything outside the declared finite scope. NONCLAIMS §6.
 3. That the counts are a benchmark result. They are coverage. NONCLAIMS §5.
 4. That the Python runtime, the OS, or GitHub Actions are correct.

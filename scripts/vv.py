@@ -50,6 +50,11 @@ ADAPTER = "adapter"
 OUTCOMES = frozenset({v.value for v in Verdict} | {ADAPTER})
 PROVENANCE_CLAUSES = ("R", "K")
 
+# A repository document says what this package does or refuses to claim. It is never
+# where a clause came from. Citing one as an origin is the confusion this gate exists
+# to catch; a clause that genuinely has no origin says so with `unsourced`.
+REPO_DOCUMENTS = ("NONCLAIMS.md", "README.md", "VV.md", "SKILL.md")
+
 
 # ---------------------------------------------------------------- primitives
 
@@ -214,18 +219,54 @@ def objective_no_self_grading(domain: dict) -> dict:
     )
 
 
+def provenance_gaps(label: str, specification: dict) -> list[str]:
+    """The decidable part of the provenance rule, over one specification.
+
+    Three things about a citation are decidable and are checked here: that a clause
+    which constrains is cited at all, that the citation is not blank, and that it
+    does not point at one of this repository's own documents — those explain what the
+    package does and refuses to claim, and are never where a clause came from. A
+    clause with no origin declares that with `unsourced` rather than narrating it.
+
+    Whether a source names anything real is NOT decidable, here or anywhere in this
+    package, and nothing in this function claims it. See VV.md.
+    """
+    entries = [e for e in specification.get("provenance", []) if isinstance(e, dict)]
+    cited = {e.get("clause") for e in entries}
+    gaps = [
+        f"{label}:{clause} constrains but cites nothing"
+        for clause in PROVENANCE_CLAUSES
+        if specification.get(clause) is not None and clause not in cited
+    ]
+    for entry in entries:
+        clause = entry.get("clause")
+        source = str(entry.get("source") or "").strip()
+        if not source:
+            gaps.append(f"{label}:{clause} cites an empty source")
+            continue
+        if entry.get("unsourced"):
+            continue
+        named = next((d for d in REPO_DOCUMENTS if d in source), None)
+        if named:
+            gaps.append(
+                f"{label}:{clause} cites {named}, which explains this package rather "
+                'than being where the clause came from (use "unsourced": true if it '
+                "genuinely has no origin)"
+            )
+    return gaps
+
+
 def objective_provenance(domain: dict) -> dict:
     """Validation gate: a clause that constrains must say where it came from."""
-    gaps = []
+    gaps: list[str] = []
     for path in sorted({c["spec"] for c in domain["cases"]}):
-        spec = load_spec(ROOT / path)
-        cited = {p.get("clause") for p in spec["specification"]["provenance"] if isinstance(p, dict)}
-        for clause in PROVENANCE_CLAUSES:
-            if spec["specification"][clause] is not None and clause not in cited:
-                gaps.append(f"{path}:{clause}")
+        gaps += provenance_gaps(path, load_spec(ROOT / path)["specification"])
     if gaps:
-        return fail("provenance", f"clauses constrain but cite no source: {gaps}")
-    return meet("provenance", "every non-null R and K clause cites a source")
+        return fail("provenance", "; ".join(gaps))
+    return meet(
+        "provenance",
+        "every non-null R and K clause names an origin, or declares it has none",
+    )
 
 
 def objective_declared_semantics(domain: dict) -> dict:
