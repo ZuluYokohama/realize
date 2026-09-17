@@ -14,7 +14,7 @@
     "preferences": ["min_length"],
     "evidence_mode": "exhaustive_finite",
     "provenance": [
-      {"clause": "R", "source": "NONCLAIMS.md §2 — zero budget is UNKNOWN, never UNSAT"},
+      {"clause": "R", "source": "VCOS §8.3 — guarded integer term series"},
       {"clause": "K", "source": "VCOS §8.3 — state stays in [0, cap] at every step"}
     ]
   },

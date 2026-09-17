@@ -39,7 +39,8 @@ enumeration as well as the result.
 ## Run
 
 ```bash
-lean Formula.lean          # one file; exit 0 and no output means it checks
+lean Formula.lean          # one file; it checks on exit 0 with only its `fact` lines
+                           # on stdout. Any other output is a failure.
 python3 ../../scripts/vv.py --lean
 ```
 

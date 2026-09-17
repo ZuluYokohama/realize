@@ -12,7 +12,7 @@
     "K": null,
     "preferences": [],
     "evidence_mode": "exhaustive_finite",
-    "provenance": [{"clause": "R", "source": "NONCLAIMS.md §2 — zero budget is UNKNOWN, never UNSAT"}]
+    "provenance": [{"clause": "R", "source": "VCMS Example 4.3 (separating encoder variant)"}]
   },
   "library": {
     "encoders": [

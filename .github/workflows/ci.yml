@@ -1,5 +1,11 @@
 name: ci
 on: [push, pull_request]
+
+# Every job here only reads the checkout. Artifact upload uses the runtime
+# token, not this one, so read is enough.
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -61,10 +67,18 @@ jobs:
           path: ~/.elan
           key: elan-${{ runner.os }}-${{ hashFiles('vv/lean/lean-toolchain') }}
       - name: install lean
+        # Pinned to an immutable revision and checksummed before it is executed.
+        # `master` is mutable, and this job runs on pull_request.
+        env:
+          ELAN_REV: 0e36a07b9bbcc5381fa6250df109f9a4f94d7bac
+          ELAN_SHA256: a620ff1641616222c8d37c54845492004bb84d6877cdbc944dd65c1aa685bf53
         run: |
+          set -euo pipefail
           if [ ! -x "$HOME/.elan/bin/lean" ]; then
-            curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            curl -sSfL \
+              "https://raw.githubusercontent.com/leanprover/elan/${ELAN_REV}/elan-init.sh" \
               -o /tmp/elan-init.sh
+            echo "${ELAN_SHA256}  /tmp/elan-init.sh" | sha256sum -c -
             sh /tmp/elan-init.sh -y --default-toolchain "$(tr -d '[:space:]' < vv/lean/lean-toolchain)"
           fi
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"

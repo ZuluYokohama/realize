@@ -405,8 +405,13 @@ def python_facts() -> dict[str, str]:
     return out
 
 
-def compare_facts(reported: dict[str, str]) -> dict:
-    """Two implementations, one set of questions. Every fact must be compared."""
+def compare_facts(reported: dict[str, str], repeated: list[str]) -> dict:
+    """Two implementations, one set of questions. Every fact must be compared.
+
+    A fact reported twice is a failure even when both copies agree: the second
+    would overwrite the first, so one file could quietly supply the value another
+    file got wrong.
+    """
     expected = python_facts()
     disagreements = [
         {"fact": k, "lean": reported.get(k), "python": v}
@@ -414,10 +419,11 @@ def compare_facts(reported: dict[str, str]) -> dict:
         if reported.get(k) != v
     ]
     unclaimed = sorted(set(reported) - set(expected))
-    if unclaimed:
-        disagreements += [
-            {"fact": k, "lean": reported[k], "python": None} for k in unclaimed
-        ]
+    disagreements += [{"fact": k, "lean": reported[k], "python": None} for k in unclaimed]
+    disagreements += [
+        {"fact": k, "lean": "reported more than once", "python": expected.get(k)}
+        for k in sorted(set(repeated))
+    ]
     return {
         "ok": not disagreements,
         "compared": len(expected),
@@ -476,10 +482,14 @@ def run_lean(require: bool) -> dict:
             }
         )
     reported: dict[str, str] = {}
+    repeated: list[str] = []
     for row in results:
         for match in re.finditer(r"^fact ([\w.]+)=(.*)$", row["output"], re.MULTILINE):
-            reported[match.group(1)] = match.group(2)
-    cross = compare_facts(reported)
+            name = match.group(1)
+            if name in reported:
+                repeated.append(name)
+            reported[name] = match.group(2)
+    cross = compare_facts(reported, repeated)
     return {
         "status": "checked",
         "ok": all(r["ok"] for r in results) and cross["ok"],

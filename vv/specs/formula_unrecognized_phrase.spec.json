@@ -10,7 +10,7 @@
     "K": null,
     "preferences": [],
     "evidence_mode": "exhaustive_finite",
-    "provenance": [{"clause": "R", "source": "NONCLAIMS.md §1 — no invented R from English"}]
+    "provenance": [{"clause": "R", "source": "no source: the phrase is deliberately outside the declared set (NONCLAIMS.md §1)"}]
   },
   "library": {
     "encoders": [],
