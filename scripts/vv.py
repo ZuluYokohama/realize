@@ -20,20 +20,21 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
+try:
+    from realize import __version__
+    from realize.checker import check_search
+    from realize.digest import canonical_bytes
+    from realize.spec import load_spec
+    from realize.verdicts import EXIT, GRAMMARS, PROBLEM_FAMILIES, SEMANTICS, Verdict
+except ModuleNotFoundError:  # a bare checkout, before `pip install -e ".[dev]"`
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+    from realize import __version__
+    from realize.checker import check_search
+    from realize.digest import canonical_bytes
+    from realize.spec import load_spec
+    from realize.verdicts import EXIT, GRAMMARS, PROBLEM_FAMILIES, SEMANTICS, Verdict
 
-from realize import __version__  # noqa: E402
-from realize.checker import check_search  # noqa: E402
-from realize.digest import canonical_bytes  # noqa: E402
-from realize.spec import load_spec  # noqa: E402
-from realize.verdicts import (  # noqa: E402
-    EXIT,
-    GRAMMARS,
-    PROBLEM_FAMILIES,
-    SEMANTICS,
-    Verdict,
-)
+ROOT = Path(__file__).resolve().parents[1]
 
 CONFIG_VERSION = "realize.vv.v0"
 

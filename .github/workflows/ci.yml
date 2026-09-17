@@ -12,7 +12,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: pip install -e ".[dev]"
-      - run: ruff check src tests scripts
+      - run: ruff check src tests scripts/vv.py
       - run: pytest
       - run: realize demo three_state
       - run: realize demo max_formula

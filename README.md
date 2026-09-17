@@ -102,7 +102,7 @@ Tools: `realize_check`, `realize_synthesize`, `realize_explain`, `realize_demo`.
 ```bash
 pip install -e ".[dev]"
 pytest
-ruff check src tests scripts
+ruff check src tests scripts/vv.py
 python3 scripts/vv.py
 ```
 
