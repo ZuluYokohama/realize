@@ -6,6 +6,9 @@ The Lean corroboration is deliberately not run here: it needs a toolchain that
 
 import importlib.util
 import json
+import os
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -26,6 +29,7 @@ def _load_runner():
 
 
 vv = _load_runner()
+provenance_gaps = vv.provenance_gaps
 CONFIG = json.loads((ROOT / "vv" / "domains.json").read_text(encoding="utf-8"))
 DOMAINS = CONFIG["domains"]
 IDS = [d["id"] for d in DOMAINS]
@@ -63,3 +67,183 @@ def test_domain_reaches_all_four_verdicts_and_the_adapter(domain):
     """Four verdicts plus adapter reject, in every domain. No domain gets a pass on one."""
     reached = {c["expect"]["outcome"] for c in domain["cases"]}
     assert reached >= vv.OUTCOMES, sorted(vv.OUTCOMES - reached)
+
+
+def _spec(provenance, *, k=None):
+    """A minimal specification carrying just the clauses the provenance rule reads."""
+    return {"R": {"phrase": "larger"}, "K": k, "provenance": provenance}
+
+
+def test_provenance_accepts_a_named_origin():
+    """A paper and a section is what a citation is supposed to look like."""
+    assert provenance_gaps("s", _spec([{"clause": "R", "source": "VCOS §8.1 Table 2"}])) == []
+
+
+def test_provenance_rejects_a_repo_document_as_an_origin():
+    """The gate exists because a citation that does not cite still looks like one.
+
+    Four specs in the first version of this matrix cited NONCLAIMS.md — which explains
+    why a zero budget yields UNKNOWN — as the source of the relation in R. A reviewer
+    caught it; the gate could not. Now it can.
+    """
+    gaps = provenance_gaps("s", _spec([{"clause": "R", "source": "NONCLAIMS.md §2"}]))
+    assert len(gaps) == 1
+    assert "NONCLAIMS.md" in gaps[0]
+
+
+def test_provenance_rejects_a_blank_source():
+    """Whitespace and a missing key are both the absence of a source, not a source."""
+    assert provenance_gaps("s", _spec([{"clause": "R", "source": "   "}])) != []
+    assert provenance_gaps("s", _spec([{"clause": "R"}])) != []
+
+
+def test_provenance_rejects_a_constraining_clause_that_cites_nothing():
+    """A K that constrains is as answerable for its origin as an R."""
+    gaps = provenance_gaps("s", _spec([{"clause": "R", "source": "VCOS §8.1"}], k={"inv": "x"}))
+    assert any("K constrains but cites nothing" in g for g in gaps)
+
+
+def test_provenance_allows_a_declared_absence_of_origin():
+    """`unsourced` is a bypass. It is meant to be one, and meant to be visible."""
+    entry = {"clause": "R", "unsourced": True, "source": "deliberately outside the declared set"}
+    assert provenance_gaps("s", _spec([entry])) == []
+
+
+def test_provenance_requires_a_reason_for_a_declared_absence():
+    """A bypass nobody can read the reason for is not the visible bypass VV.md claims.
+
+    The message must also say which rule failed: reporting "cites an empty source"
+    for a deliberately originless clause sends the author looking for the wrong fix.
+    """
+    gaps = provenance_gaps("s", _spec([{"clause": "R", "unsourced": True}]))
+    assert len(gaps) == 1
+    assert "unsourced but gives no reason" in gaps[0]
+
+
+def test_shipped_specs_carry_no_provenance_gaps():
+    """The rule is only worth having if what ships already obeys it."""
+    for path in sorted((ROOT / "vv" / "specs").glob("*.json")) + sorted(
+        (ROOT / "demos").glob("*/spec.json")
+    ):
+        spec = json.loads(path.read_text(encoding="utf-8"))
+        assert provenance_gaps(path.name, spec["specification"]) == []
+
+
+def test_provenance_rejects_a_non_string_source():
+    """`str(1)` is a nonblank string. Types are checked, not coerced."""
+    gaps = provenance_gaps("s", _spec([{"clause": "R", "source": 1}]))
+    assert len(gaps) == 1
+    assert "empty source" in gaps[0]
+
+
+def test_provenance_rejects_a_non_boolean_unsourced():
+    """The string "false" is truthy, and would otherwise wave a clause through."""
+    for value in ("false", 1, "yes", []):
+        entry = {"clause": "R", "unsourced": value, "source": "NONCLAIMS.md §2"}
+        gaps = provenance_gaps("s", _spec([entry]))
+        assert gaps, f"unsourced={value!r} slipped through"
+        assert "not a boolean" in gaps[0] or "NONCLAIMS.md" in gaps[0]
+
+
+def test_import_fallback_does_not_mask_a_broken_install(tmp_path):
+    """A missing submodule means the install is broken, not that it is absent.
+
+    Falling back to the checkout there would load working code over a broken
+    package and hide the breakage, so the runner re-raises instead.
+    """
+    # Mirror the real package: its __init__ imports a submodule. When that submodule
+    # is missing, Python purges `realize` from sys.modules, so a bare `sys.path`
+    # fallback would re-resolve to the checkout and report success over a broken
+    # install. A stub whose __init__ succeeds would not reproduce that.
+    stub = tmp_path / "realize"
+    stub.mkdir()
+    (stub / "__init__.py").write_text(
+        "from realize.verdicts import Verdict\n__version__ = 'stub'\n", encoding="utf-8"
+    )
+    env = dict(os.environ, PYTHONPATH=str(tmp_path))
+    proc = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "vv.py"), "--domain", "encoder.finite_case_table"],
+        capture_output=True, text=True, cwd=ROOT, env=env, check=False,
+    )
+    assert proc.returncode != 0
+    assert "ModuleNotFoundError" in proc.stderr
+    assert "realize.verdicts" in proc.stderr
+
+
+# ---------------------------------------------------------------- the effect band
+
+
+def test_every_effect_fact_names_a_verdict_an_optimality_and_a_reason():
+    """The fact Lean is compared against must carry all three, or it compares less."""
+    verdicts = {"PASS", "COUNTEREXAMPLE", "UNSAT", "UNKNOWN"}
+    optimalities = {"proved", "unresolved", "not_requested"}
+    facts = vv.effect_facts()
+    named = [k for k in facts if k.count(".") == 1]
+    assert len(named) == len(vv.EFFECT_SPECS)
+    for key in named:
+        verdict, optimality, reason = facts[key].split("/")
+        assert verdict in verdicts, key
+        assert optimality in optimalities, key
+        assert reason, f"{key} reports no reason"
+
+
+def test_every_shipped_spec_is_cross_checked():
+    """A spec nobody corroborates is a claim nobody has read twice.
+
+    This is the ratchet: add a spec to `vv/specs/` or `demos/` and this fails until
+    a Lean file derives the verdict it should draw.
+    """
+    shipped = {p.relative_to(ROOT).as_posix() for p in ROOT.glob("vv/specs/*.spec.json")}
+    shipped |= {p.relative_to(ROOT).as_posix() for p in ROOT.glob("demos/*/spec.json")}
+    covered = {relative for _name, relative, _keys in vv.EFFECT_SPECS}
+    assert shipped - covered == set(), "shipped but never cross-checked"
+    assert covered - shipped == set(), "cross-checked but no longer shipped"
+
+
+def test_effect_facts_come_from_the_entry_point_not_from_the_kernel():
+    """Both bands must be answered, and neither may stand in for the other."""
+    parts = vv.python_facts()
+    effects = vv.effect_facts()
+    assert not set(parts) & set(effects)
+    assert all(k.startswith("verdict.") for k in effects)
+    assert not any(k.startswith("verdict.") for k in parts)
+
+
+def test_compare_facts_refuses_two_sources_for_one_name(monkeypatch):
+    """A collision would let one band overwrite the other and drop a question."""
+    monkeypatch.setattr(vv, "python_facts", lambda: {"verdict.max_formula": "x"})
+    with pytest.raises(RuntimeError, match="claimed by two sources"):
+        vv.compare_facts({}, [])
+
+
+def test_compare_facts_catches_a_verdict_that_lean_derives_differently():
+    """The disagreement the band exists for: right parts, wrong verdict.
+
+    The stand-in reason is one no branch of the checker can produce. Naming a real
+    alternative would tie this test to the checker's wording, so a kernel that drifted
+    onto that wording would turn the test green for the wrong reason.
+    """
+    agreed = {**vv.python_facts(), **vv.effect_facts()}
+    agreed["verdict.grid_preserve_histogram"] = "UNSAT/proved/no_branch_reports_this"
+    result = vv.compare_facts(agreed, [])
+    assert not result["ok"]
+    assert [row["fact"] for row in result["disagreements"]] == ["verdict.grid_preserve_histogram"]
+
+
+def test_fact_value_renders_a_list_of_sets_the_way_lean_prints_it():
+    """`obstructions` is a list of subsets; flattening it would compare the wrong thing."""
+    assert vv._fact_value([[0, 1, 2]]) == "0,1,2"
+    assert vv._fact_value([[0, 1], [1, 2]]) == "0,1;1,2"
+    assert vv._fact_value(["separate_all"]) == "separate_all"
+    assert vv._fact_value(None) == ""
+    assert vv._fact_value(3) == "3"
+
+
+def test_verdict_keys_finds_a_grade_nested_anywhere():
+    """The shallow check this replaced waved `{"metadata": {"verdict": ...}}` through."""
+    assert vv.verdict_keys({"candidates": [], "exhausted": True}) == []
+    assert vv.verdict_keys({"verdict": "PASS"}) == ["verdict"]
+    assert vv.verdict_keys({"candidates": [{"verdict": "PASS"}]}) == ["candidates[0].verdict"]
+    assert vv.verdict_keys({"metadata": {"verdict": "PASS"}}) == ["metadata.verdict"]
+    assert vv.verdict_keys({"a": [{"b": {"verdict": "PASS"}}]}) == ["a[0].b.verdict"]
+    assert vv.verdict_keys({"verdict": {"verdict": "PASS"}}) == ["verdict", "verdict.verdict"]

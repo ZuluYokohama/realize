@@ -26,7 +26,11 @@ try:
     from realize.digest import canonical_bytes
     from realize.spec import load_spec
     from realize.verdicts import EXIT, GRAMMARS, PROBLEM_FAMILIES, SEMANTICS, Verdict
-except ModuleNotFoundError:  # a bare checkout, before `pip install -e ".[dev]"`
+except ModuleNotFoundError as missing:  # a bare checkout, before `pip install -e .`
+    # Only an absent top-level package means "not installed yet". A missing submodule
+    # means the install is broken, and falling back would hide that.
+    if missing.name != "realize":
+        raise
     sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
     from realize import __version__
     from realize.checker import check_search
@@ -49,6 +53,30 @@ LEAN_FORBIDDEN = (
 ADAPTER = "adapter"
 OUTCOMES = frozenset({v.value for v in Verdict} | {ADAPTER})
 PROVENANCE_CLAUSES = ("R", "K")
+
+# A repository document says what this package does or refuses to claim. It is never
+# where a clause came from. Citing one as an origin is the confusion this gate exists
+# to catch; a clause that genuinely has no origin says so with `unsourced`.
+REPO_DOCUMENTS = ("NONCLAIMS.md", "README.md", "VV.md", "SKILL.md")
+
+# Specs that ship, the verdict each one draws out of the checker, and the witness
+# fields worth comparing. Lean derives what the verdict has to be; `effect_facts`
+# reads what it was. These are the repository's effect, not its internals.
+EFFECT_SPECS = (
+    ("max_formula", "demos/max_formula/spec.json", ("universe", "n_valid")),
+    ("formula_affine_only", "vv/specs/formula_affine_only.spec.json", ("universe",)),
+    ("formula_unrecognized_phrase", "vv/specs/formula_unrecognized_phrase.spec.json", ()),
+    ("three_state", "demos/three_state/spec.json", ("obstructions",)),
+    ("encoder_separating", "vv/specs/encoder_separating.spec.json", ("adequate_encoders",)),
+    ("encoder_zero_budget", "vv/specs/encoder_zero_budget.spec.json", ()),
+    ("series_seven", "vv/specs/series_seven.spec.json", ("n_valid", "min_len")),
+    ("series_even_repertoire", "vv/specs/series_even_repertoire.spec.json", ("n_valid",)),
+    ("series_target_nine", "vv/specs/series_target_nine.spec.json", ()),
+    ("series_zero_budget", "vv/specs/series_zero_budget.spec.json", ()),
+    ("grid_recolor", "demos/grid_recolor/spec.json", ("n_valid",)),
+    ("grid_preserve_histogram", "vv/specs/grid_preserve_histogram.spec.json", ()),
+    ("grid_zero_budget", "vv/specs/grid_zero_budget.spec.json", ()),
+)
 
 
 # ---------------------------------------------------------------- primitives
@@ -184,14 +212,41 @@ def objective_tamper(domain: dict) -> dict:
             "tamper_evidence",
             f"budget changed by one and the candidate still scored exit {code}",
         )
-    return meet("tamper_evidence", "a one-field spec edit turns PASS into an adapter reject")
+    return meet(
+        "tamper_evidence",
+        "bound.budget changed by one and the bound candidate was refused, not judged",
+    )
 
 
-def objective_no_self_grading(domain: dict) -> dict:
-    """The proposer channel must never hand back something that reads as a verdict."""
+def verdict_keys(node: Any, path: str = "") -> list[str]:
+    """Every place a `verdict` key appears in a decoded JSON document, by path.
+
+    A synthesize payload is a proposal. A grade nested three levels down still reads
+    as a grade, so the whole document is walked rather than its first two levels.
+    """
+    found: list[str] = []
+    if isinstance(node, dict):
+        for key, value in node.items():
+            here = f"{path}.{key}" if path else key
+            if key == "verdict":
+                found.append(here)
+            found += verdict_keys(value, here)
+    elif isinstance(node, list):
+        for index, value in enumerate(node):
+            found += verdict_keys(value, f"{path}[{index}]")
+    return found
+
+
+def objective_synthesize_emits_no_verdict(domain: dict) -> dict:
+    """The proposer channel must not hand back something that reads as a verdict.
+
+    This is one mechanical consequence of NONCLAIMS §9, not a check of the principle.
+    It reads one `synthesize` payload, every key of it; it cannot see an agent calling
+    another model to grade an answer, which is the thing §9 actually forbids.
+    """
     case = next((c for c in domain["cases"] if c["expect"]["outcome"] == "PASS"), None)
     if case is None:
-        return fail("no_self_grading", "domain declares no PASS case to synthesize from")
+        return fail("synthesize_emits_no_verdict", "domain declares no PASS case to synthesize from")
     proc = subprocess.run(
         [sys.executable, "-m", "realize", "synthesize", case["spec"]],
         capture_output=True,
@@ -201,31 +256,90 @@ def objective_no_self_grading(domain: dict) -> dict:
         check=False,
     )
     if proc.returncode != 0:
-        return fail("no_self_grading", f"synthesize exited {proc.returncode}: {proc.stderr.strip()}")
+        return fail("synthesize_emits_no_verdict", f"synthesize exited {proc.returncode}: {proc.stderr.strip()}")
     payload = json.loads(proc.stdout)
-    if "verdict" in payload:
-        return fail("no_self_grading", "synthesize output carries a top-level verdict")
-    graded = [c for c in payload.get("candidates", []) if "verdict" in c]
+    graded = verdict_keys(payload)
     if graded:
-        return fail("no_self_grading", f"{len(graded)} synthesized candidates carry a verdict")
+        return fail(
+            "synthesize_emits_no_verdict",
+            f"synthesize output carries a verdict at {', '.join(graded)}",
+        )
     return meet(
-        "no_self_grading",
-        f"{len(payload.get('candidates', []))} candidates, none carrying a verdict",
+        "synthesize_emits_no_verdict",
+        f"{len(payload.get('candidates', []))} candidates, no verdict key at any depth",
     )
 
 
+def provenance_gaps(label: str, specification: dict) -> list[str]:
+    """The decidable part of the provenance rule, over one specification.
+
+    Three things about a citation are decidable and are checked here: that a clause
+    which constrains is cited at all, that the citation is not blank, and that it
+    does not point at one of this repository's own documents — those explain what the
+    package does and refuses to claim, and are never where a clause came from. A
+    clause with no origin declares that with `unsourced` rather than narrating it, and
+    still owes a `source` giving the reason -- an unexplained bypass is not a bypass
+    anyone can audit.
+
+    Whether a source names anything real is NOT decidable, here or anywhere in this
+    package, and nothing in this function claims it. See VV.md.
+    """
+    entries = [e for e in specification.get("provenance", []) if isinstance(e, dict)]
+    cited = {e.get("clause") for e in entries}
+    gaps = [
+        f"{label}:{clause} constrains but cites nothing"
+        for clause in PROVENANCE_CLAUSES
+        if specification.get(clause) is not None and clause not in cited
+    ]
+    for entry in entries:
+        clause = entry.get("clause")
+        # Types are checked rather than coerced: str(1) is a nonblank string, and the
+        # string "false" is truthy. A gate this easy to fool is not a gate.
+        unsourced = entry.get("unsourced", False)
+        if not isinstance(unsourced, bool):
+            gaps.append(
+                f"{label}:{clause} declares unsourced as {unsourced!r}, which is not a boolean"
+            )
+            continue
+        source = entry.get("source")
+        if not isinstance(source, str) or not source.strip():
+            # A declared absence of origin still owes a reason. An unexplained bypass is
+            # the one thing this objective exists to keep visible.
+            gaps.append(
+                f"{label}:{clause} declares itself unsourced but gives no reason"
+                if unsourced
+                else f"{label}:{clause} cites an empty source"
+            )
+            continue
+        source = source.strip()
+        if unsourced:
+            continue
+        named = next((d for d in REPO_DOCUMENTS if d in source), None)
+        if named:
+            gaps.append(
+                f"{label}:{clause} cites {named}, which explains this package rather "
+                'than being where the clause came from (use "unsourced": true if it '
+                "genuinely has no origin)"
+            )
+    return gaps
+
+
 def objective_provenance(domain: dict) -> dict:
-    """Validation gate: a clause that constrains must say where it came from."""
-    gaps = []
+    """An authoring rule with a lint: a clause that constrains must name where it came from.
+
+    Not a validation gate, whatever it may look like from the outside. It checks the
+    form of a citation, never that the citation names anything real. VV.md says why
+    that distinction is the whole point.
+    """
+    gaps: list[str] = []
     for path in sorted({c["spec"] for c in domain["cases"]}):
-        spec = load_spec(ROOT / path)
-        cited = {p.get("clause") for p in spec["specification"]["provenance"] if isinstance(p, dict)}
-        for clause in PROVENANCE_CLAUSES:
-            if spec["specification"][clause] is not None and clause not in cited:
-                gaps.append(f"{path}:{clause}")
+        gaps += provenance_gaps(path, load_spec(ROOT / path)["specification"])
     if gaps:
-        return fail("provenance", f"clauses constrain but cite no source: {gaps}")
-    return meet("provenance", "every non-null R and K clause cites a source")
+        return fail("provenance", "; ".join(gaps))
+    return meet(
+        "provenance",
+        "every non-null R and K clause names an origin, or declares it has none",
+    )
 
 
 def objective_declared_semantics(domain: dict) -> dict:
@@ -285,7 +399,7 @@ def run_domain(domain: dict) -> dict:
         objective_declared_semantics(domain),
         objective_outcome_coverage(domain),
         objective_tamper(domain),
-        objective_no_self_grading(domain),
+        objective_synthesize_emits_no_verdict(domain),
         objective_provenance(domain),
     ]
     return {
@@ -405,14 +519,56 @@ def python_facts() -> dict[str, str]:
     return out
 
 
+def _fact_value(value: Any) -> str:
+    """A witness field as the Lean side prints it: a list joined, a list of lists twice."""
+    if isinstance(value, list):
+        return ";".join(
+            ",".join(str(v) for v in item) if isinstance(item, list) else str(item)
+            for item in value
+        )
+    return "" if value is None else str(value)
+
+
+def effect_facts() -> dict[str, str]:
+    """What the package emits, read from the entry point that emits it.
+
+    `python_facts` recomputes quantities from kernel internals, so it and Lean agree
+    about the parts of a search. These run `check_search` on the spec files that
+    ship and read the certificate: the verdict, how settled it is, and why. That is
+    the effect. A kernel whose parts are each right and whose verdict is assembled
+    from them wrongly disagrees here and nowhere else.
+    """
+    out: dict[str, str] = {}
+    for name, relative, witness_keys in EFFECT_SPECS:
+        cert = check_search(ROOT / relative)
+        witness = cert["witness"]
+        out[f"verdict.{name}"] = (
+            f"{cert['verdict']}/{cert['optimality']}/{witness.get('reason', '')}"
+        )
+        for key in witness_keys:
+            out[f"verdict.{name}.{key}"] = _fact_value(witness.get(key))
+    return out
+
+
 def compare_facts(reported: dict[str, str], repeated: list[str]) -> dict:
     """Two implementations, one set of questions. Every fact must be compared.
+
+    The questions come in two bands: what the search finds (`python_facts`) and what
+    the checker then reports (`effect_facts`). Lean answers both from its own
+    enumeration, so agreement on the first does not buy agreement on the second.
 
     A fact reported twice is a failure even when both copies agree: the second
     would overwrite the first, so one file could quietly supply the value another
     file got wrong.
     """
     expected = python_facts()
+    effects = effect_facts()
+    claimed_twice = sorted(set(expected) & set(effects))
+    if claimed_twice:
+        # One name, two sources: the second would overwrite the first and the
+        # comparison would silently drop a question.
+        raise RuntimeError(f"fact name claimed by two sources: {claimed_twice}")
+    expected.update(effects)
     disagreements = [
         {"fact": k, "lean": reported.get(k), "python": v}
         for k, v in sorted(expected.items())
@@ -493,7 +649,8 @@ def run_lean(require: bool) -> dict:
     return {
         "status": "checked",
         "ok": all(r["ok"] for r in results) and cross["ok"],
-        "detail": "Lean corroborates the finite facts. It does not certify the Python kernel.",
+        "detail": "Lean corroborates the finite facts and the verdicts drawn from them. "
+        "It does not certify the Python kernel.",
         "files": results,
         "cross_check": cross,
     }

@@ -1,8 +1,11 @@
 /-
   Cross-check for the `term_series.guarded_integer_sequence` domain (VCOS §8.3).
 
-  Lean agrees or disagrees with the finite facts the Python kernel reports.
-  It does not certify the Python kernel, and it cannot mint a verdict.
+  Lean agrees or disagrees with the finite facts the Python kernel reports, and with
+  the verdict it reports for each spec that ships in this domain.
+
+  It does not certify the Python kernel, and it cannot mint a verdict: working out
+  what a verdict has to be is not issuing one.
 
   This is the grammar that shipped no spec before `vv/specs/series_seven.spec.json`.
 -/
@@ -84,5 +87,55 @@ def minValid : List (List Op) :=
   vs.filter (fun s => s.length == m)
 
 #eval IO.println s!"fact series.witness={showSeq (minValid.headD [])}"
+
+/-! ## What the checker has to report
+
+    Everything above is a quantity found *inside* the search. These are the effect:
+    the verdict `realize.checker.check_search` must emit for a spec file that ships
+    in this repository. `scripts/vv.py` runs the real entry point on the real file
+    and compares the two.
+
+    The branch order below is the checker's, transcribed. The numbers fed to it are
+    computed here. `_search_series` also refuses a negative target; `Nat` cannot
+    name one, so that branch is not modelled and not claimed. -/
+
+/-- What `_search_series` reports, given the guard, the class size and what it finds. -/
+def searchVerdict (budget cap target card nValid : Nat) : String :=
+  if budget == 0 then "UNKNOWN/unresolved/zero_budget"
+  else if target > cap then "UNSAT/proved/target_outside_invariant"
+  else if card > budget then "UNKNOWN/unresolved/incomplete_coverage"
+  else if nValid == 0 then "UNSAT/proved/no_valid_sequence"
+  else "UNKNOWN/proved/realizations_exist_supply_a_candidate"
+
+/-- `vv/specs/series_seven.spec.json`. -/
+def seven : String :=
+  searchVerdict 10000 8 7 (upTo repertoire 4).length (valid repertoire 8 7 4).length
+
+/-- `vv/specs/series_even_repertoire.spec.json`: 7 is odd and the steps are not. -/
+def evenRepertoireSpec : String :=
+  searchVerdict 10000 8 7 (upTo evenRepertoire 4).length (valid evenRepertoire 8 7 4).length
+
+/-- `vv/specs/series_target_nine.spec.json`: R asks for a state the invariant forbids. -/
+def targetNine : String :=
+  searchVerdict 10000 8 9 (upTo repertoire 4).length (valid repertoire 8 9 4).length
+
+/-- `vv/specs/series_zero_budget.spec.json`. -/
+def zeroBudget : String := searchVerdict 0 8 7 0 0
+
+theorem seven_verdict :
+    seven = "UNKNOWN/proved/realizations_exist_supply_a_candidate" := by decide
+theorem even_repertoire_verdict :
+    evenRepertoireSpec = "UNSAT/proved/no_valid_sequence" := by decide
+theorem target_nine_verdict :
+    targetNine = "UNSAT/proved/target_outside_invariant" := by decide
+theorem zero_budget_verdict : zeroBudget = "UNKNOWN/unresolved/zero_budget" := by decide
+
+#eval IO.println s!"fact verdict.series_seven={seven}"
+#eval IO.println s!"fact verdict.series_seven.n_valid={(valid repertoire 8 7 4).length}"
+#eval IO.println s!"fact verdict.series_seven.min_len={((valid repertoire 8 7 4).map List.length).min?.getD 0}"
+#eval IO.println s!"fact verdict.series_even_repertoire={evenRepertoireSpec}"
+#eval IO.println s!"fact verdict.series_even_repertoire.n_valid={(valid evenRepertoire 8 7 4).length}"
+#eval IO.println s!"fact verdict.series_target_nine={targetNine}"
+#eval IO.println s!"fact verdict.series_zero_budget={zeroBudget}"
 
 end Realize.Series

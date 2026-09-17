@@ -1,8 +1,11 @@
 /-
   Cross-check for the `encoder.finite_case_table` domain (VCMS Example 4.3).
 
-  Lean agrees or disagrees with the finite facts the Python kernel reports.
-  It does not certify the Python kernel, and it cannot mint a verdict.
+  Lean agrees or disagrees with the finite facts the Python kernel reports, and with
+  the verdict it reports for each spec that ships in this domain.
+
+  It does not certify the Python kernel, and it cannot mint a verdict: working out
+  what a verdict has to be is not issuing one.
 -/
 
 namespace Realize.Encoder
@@ -86,5 +89,73 @@ def showList (l : List Nat) : String := String.intercalate "," (l.map toString)
 #eval IO.println s!"fact encoder.pair_01={showList (inter (A 0) (A 1))}"
 #eval IO.println s!"fact encoder.pair_12={showList (inter (A 1) (A 2))}"
 #eval IO.println s!"fact encoder.pair_02={showList (inter (A 0) (A 2))}"
+
+/-! ## What the checker has to report
+
+    Everything above is a quantity found *inside* the search. These are the effect:
+    the verdict `realize.checker.check_search` must emit for a spec file that ships
+    in this repository. `scripts/vv.py` runs the real entry point on the real file
+    and compares the two.
+
+    The branch order below is the checker's, transcribed. The numbers fed to it are
+    computed here. -/
+
+def subsetsOf : List Nat → List (List Nat)
+  | [] => [[]]
+  | x :: rest => (subsetsOf rest).flatMap (fun s => [s, x :: s])
+
+/-- Subsets shortest first, matching the order the Python side walks them in. -/
+def bySize (l : List Nat) : List (List Nat) :=
+  (List.range (l.length + 1)).flatMap (fun k => (subsetsOf l).filter (fun s => s.length == k))
+
+def covers (a b : List Nat) : Bool := a.all (fun x => b.contains x)
+
+/-- Inclusion-minimal B ⊆ dom whose acceptable sets have nothing in common.
+    This is the content of the UNSAT, not just its name. -/
+def obstructions : List (List Nat) :=
+  (bySize dom).foldl
+    (fun acc b =>
+      if b.isEmpty || acc.any (fun p => covers p b) then acc
+      else if (interAll (b.map A)).isEmpty then acc ++ [b] else acc)
+    []
+
+/-- The encoders `demos/three_state/spec.json` and `vv/specs/encoder_separating.spec.json`
+    put in the library, in file order. -/
+def library : List (String × (Nat → Nat)) :=
+  [("collapse_all", collapseAll), ("separate_all", separateAll)]
+
+def adequateIds (lib : List (String × (Nat → Nat))) : List String :=
+  (lib.filter (fun e => adequate e.2)).map (·.1)
+
+/-- What `_search_encoder` reports, given how many encoders it may read and how many hold. -/
+def searchVerdict (budget nEncoders nAdequate : Nat) : String :=
+  if budget == 0 then "UNKNOWN/unresolved/zero_budget"
+  else if nEncoders > budget then "UNKNOWN/unresolved/incomplete_coverage"
+  else if nAdequate == 0 then "UNSAT/proved/no_adequate_encoder"
+  else "UNKNOWN/proved/realizations_exist_supply_a_candidate"
+
+/-- `demos/three_state/spec.json`: one encoder is offered, and it collapses. -/
+def threeState : String :=
+  searchVerdict 100 1 (adequateIds [("collapse_all", collapseAll)]).length
+
+/-- `vv/specs/encoder_separating.spec.json`: the same R, with a separating encoder offered. -/
+def separating : String := searchVerdict 100 library.length (adequateIds library).length
+
+/-- `vv/specs/encoder_zero_budget.spec.json`: nothing may be read, so nothing is settled. -/
+def zeroBudget : String := searchVerdict 0 1 0
+
+theorem three_state_verdict : threeState = "UNSAT/proved/no_adequate_encoder" := by decide
+theorem separating_verdict :
+    separating = "UNKNOWN/proved/realizations_exist_supply_a_candidate" := by decide
+theorem zero_budget_verdict : zeroBudget = "UNKNOWN/unresolved/zero_budget" := by decide
+theorem obstruction_is_the_triple : obstructions = [[0, 1, 2]] := by decide
+
+def showSets (l : List (List Nat)) : String := String.intercalate ";" (l.map showList)
+
+#eval IO.println s!"fact verdict.three_state={threeState}"
+#eval IO.println s!"fact verdict.three_state.obstructions={showSets obstructions}"
+#eval IO.println s!"fact verdict.encoder_separating={separating}"
+#eval IO.println s!"fact verdict.encoder_separating.adequate_encoders={String.intercalate ";" (adequateIds library)}"
+#eval IO.println s!"fact verdict.encoder_zero_budget={zeroBudget}"
 
 end Realize.Encoder
