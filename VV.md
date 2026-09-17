@@ -99,8 +99,9 @@ a citation. A reviewer caught it; the gate could not. It can now, and
 
 **What stays undecidable: whether a source names anything real.** `VCOS §8.1 Table 2` and `asdf`
 are the same shape, and nothing in a finite checker tells them apart. A clause with no origin
-declares that with `"unsourced": true`, and the gate takes the author's word for it — so that
-marker is a bypass, deliberately a visible one. Counting the `unsourced` clauses in `vv/specs/` is
+declares that with `"unsourced": true` *and* a `source` giving the reason, and the gate takes
+the author's word for it — so that marker is a bypass, deliberately a visible one. The reason is
+required precisely because an unexplained bypass is one nobody can audit. Counting the `unsourced` clauses in `vv/specs/` is
 a minute's work for a person; noticing a plausible-looking citation that names nothing is not.
 
 This is V₂ reaching into a V₁ check, and it does not close. What the objective changed is where

@@ -109,6 +109,17 @@ def test_provenance_allows_a_declared_absence_of_origin():
     assert provenance_gaps("s", _spec([entry])) == []
 
 
+def test_provenance_requires_a_reason_for_a_declared_absence():
+    """A bypass nobody can read the reason for is not the visible bypass VV.md claims.
+
+    The message must also say which rule failed: reporting "cites an empty source"
+    for a deliberately originless clause sends the author looking for the wrong fix.
+    """
+    gaps = provenance_gaps("s", _spec([{"clause": "R", "unsourced": True}]))
+    assert len(gaps) == 1
+    assert "unsourced but gives no reason" in gaps[0]
+
+
 def test_shipped_specs_carry_no_provenance_gaps():
     """The rule is only worth having if what ships already obeys it."""
     for path in sorted((ROOT / "vv" / "specs").glob("*.json")) + sorted(

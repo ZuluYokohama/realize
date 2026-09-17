@@ -230,7 +230,9 @@ def provenance_gaps(label: str, specification: dict) -> list[str]:
     which constrains is cited at all, that the citation is not blank, and that it
     does not point at one of this repository's own documents — those explain what the
     package does and refuses to claim, and are never where a clause came from. A
-    clause with no origin declares that with `unsourced` rather than narrating it.
+    clause with no origin declares that with `unsourced` rather than narrating it, and
+    still owes a `source` giving the reason -- an unexplained bypass is not a bypass
+    anyone can audit.
 
     Whether a source names anything real is NOT decidable, here or anywhere in this
     package, and nothing in this function claims it. See VV.md.
@@ -244,19 +246,25 @@ def provenance_gaps(label: str, specification: dict) -> list[str]:
     ]
     for entry in entries:
         clause = entry.get("clause")
-        source = entry.get("source")
         # Types are checked rather than coerced: str(1) is a nonblank string, and the
         # string "false" is truthy. A gate this easy to fool is not a gate.
-        if not isinstance(source, str) or not source.strip():
-            gaps.append(f"{label}:{clause} cites an empty source")
-            continue
-        source = source.strip()
         unsourced = entry.get("unsourced", False)
         if not isinstance(unsourced, bool):
             gaps.append(
                 f"{label}:{clause} declares unsourced as {unsourced!r}, which is not a boolean"
             )
             continue
+        source = entry.get("source")
+        if not isinstance(source, str) or not source.strip():
+            # A declared absence of origin still owes a reason. An unexplained bypass is
+            # the one thing this objective exists to keep visible.
+            gaps.append(
+                f"{label}:{clause} declares itself unsourced but gives no reason"
+                if unsourced
+                else f"{label}:{clause} cites an empty source"
+            )
+            continue
+        source = source.strip()
         if unsourced:
             continue
         named = next((d for d in REPO_DOCUMENTS if d in source), None)
