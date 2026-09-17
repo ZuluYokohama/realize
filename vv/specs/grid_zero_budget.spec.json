@@ -1,0 +1,73 @@
+{
+  "schema_version": "realize.v0",
+  "id": "vv.grid.zero_budget",
+  "problem_family": "term_series",
+  "context": {
+    "X": [
+      [
+        0,
+        3,
+        0
+      ],
+      [
+        4,
+        4,
+        0
+      ],
+      [
+        0,
+        0,
+        5
+      ]
+    ],
+    "alphabet": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "semantics": "finite_integer"
+  },
+  "specification": {
+    "R": {
+      "goal": "recolor_foreground_red"
+    },
+    "K": null,
+    "preferences": [
+      "min_length"
+    ],
+    "evidence_mode": "exhaustive_finite",
+    "provenance": [
+      {
+        "clause": "R",
+        "source": "NONCLAIMS.md §2 — zero budget is UNKNOWN, never UNSAT"
+      }
+    ]
+  },
+  "library": {
+    "encoders": [],
+    "primitives": [
+      {
+        "id": "Extract",
+        "in": "Grid",
+        "out": "Mask"
+      },
+      {
+        "id": "Render2",
+        "in": "Mask",
+        "out": "Grid"
+      }
+    ],
+    "grammar": "typed_grid"
+  },
+  "bound": {
+    "budget": 0,
+    "max_term_size": 4
+  }
+}

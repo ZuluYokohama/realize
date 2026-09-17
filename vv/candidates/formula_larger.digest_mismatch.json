@@ -1,0 +1,14 @@
+{
+  "schema_version": "realize.v0",
+  "spec_id": "vcos.table2.larger",
+  "spec_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+  "term": {
+    "kind": "formula",
+    "coeffs": [
+      "0",
+      "1/2",
+      "1/2",
+      "1/2"
+    ]
+  }
+}
