@@ -32,7 +32,7 @@ are the bookkeeping that keeps someone from mistaking verification for it.
 | Verification (IEEE 1012) | `realize check` | the thing does what the words say |
 | Validation (IEEE 1012) | not dischargeable; only provenance and scope | the words say what someone wanted |
 | The oracle problem | the spec is the oracle; the model is not | something else has to say what is true, and it cannot be the one that made the thing |
-| Separation of duties | `tests/test_isolation.py`; `no_self_grading` | the one who makes a thing is not the one who says it is good |
+| Separation of duties | `tests/test_isolation.py`; `synthesize_emits_no_verdict` | the one who makes a thing is not the one who says it is good |
 | N-version / dissimilar redundancy (DO-178C) | [`vv/lean/`](vv/lean/) | two different ones do the same work apart; then you see if they say the same |
 | Soundness | `PASS` is scoped, never global | when it says yes, it is true |
 | Refusal of completeness | `UNKNOWN` is required (NONCLAIMS §2) | when it cannot know, it says so |
@@ -80,8 +80,8 @@ Per domain:
 |---|---|
 | `declared_semantics` | Matrix, kernel table, and every referenced spec agree on family / grammar / semantics. |
 | `outcome_coverage` | The domain is seen reaching `PASS`, `COUNTEREXAMPLE`, `UNSAT`, `UNKNOWN`, and adapter reject. All five. |
-| `tamper_evidence` | Change one field of the spec, and the passing candidate becomes an adapter reject. |
-| `no_self_grading` | `realize synthesize` returns candidates and no `verdict`, anywhere in the payload. |
+| `tamper_evidence` | Change `bound.budget` by one, and the candidate bound to that spec is refused rather than judged. |
+| `synthesize_emits_no_verdict` | `realize synthesize` returns candidates and no `verdict`, anywhere in the payload. |
 | `provenance` | Every non-null `R` and `K` clause names an origin, or declares with `unsourced` that it has none. |
 
 ### What `provenance` can and cannot decide
@@ -107,6 +107,18 @@ a minute's work for a person; noticing a plausible-looking citation that names n
 This is V₂ reaching into a V₁ check, and it does not close. What the objective changed is where
 the gap sits: it used to hide inside citations that looked fine, and now it sits in a marker you
 can grep for. Countable is the most a finite checker can make it.
+
+### What the objective names mean
+
+An objective is named for **what it reads**, not for the property someone might hope it
+establishes. `synthesize_emits_no_verdict` says a payload carried no `verdict` key; it does not
+say an agent refrained from grading itself, which is what NONCLAIMS §9 forbids and what no check
+here can see. `tamper_evidence` says one named field was changed and the bound candidate was
+refused; the general property comes from the digest, not from the test.
+
+This is not pedantry about naming. A report line reading `[ok] no_self_grading` is read as
+"self-grading has been ruled out," and that is a claim this harness cannot make. In a repository
+whose product is refusing to overclaim, the harness is the last place that should start.
 
 `outcome_coverage` is the one worth reading twice. Every domain must be *observed* reaching all four
 verdicts and the adapter reject — not merely be capable of it in principle. A domain that can only

@@ -193,14 +193,22 @@ def objective_tamper(domain: dict) -> dict:
             "tamper_evidence",
             f"budget changed by one and the candidate still scored exit {code}",
         )
-    return meet("tamper_evidence", "a one-field spec edit turns PASS into an adapter reject")
+    return meet(
+        "tamper_evidence",
+        "bound.budget changed by one and the bound candidate was refused, not judged",
+    )
 
 
-def objective_no_self_grading(domain: dict) -> dict:
-    """The proposer channel must never hand back something that reads as a verdict."""
+def objective_synthesize_emits_no_verdict(domain: dict) -> dict:
+    """The proposer channel must not hand back something that reads as a verdict.
+
+    This is one mechanical consequence of NONCLAIMS §9, not a check of the principle.
+    It reads the shape of one `synthesize` payload; it cannot see an agent calling
+    another model to grade an answer, which is the thing §9 actually forbids.
+    """
     case = next((c for c in domain["cases"] if c["expect"]["outcome"] == "PASS"), None)
     if case is None:
-        return fail("no_self_grading", "domain declares no PASS case to synthesize from")
+        return fail("synthesize_emits_no_verdict", "domain declares no PASS case to synthesize from")
     proc = subprocess.run(
         [sys.executable, "-m", "realize", "synthesize", case["spec"]],
         capture_output=True,
@@ -210,15 +218,15 @@ def objective_no_self_grading(domain: dict) -> dict:
         check=False,
     )
     if proc.returncode != 0:
-        return fail("no_self_grading", f"synthesize exited {proc.returncode}: {proc.stderr.strip()}")
+        return fail("synthesize_emits_no_verdict", f"synthesize exited {proc.returncode}: {proc.stderr.strip()}")
     payload = json.loads(proc.stdout)
     if "verdict" in payload:
-        return fail("no_self_grading", "synthesize output carries a top-level verdict")
+        return fail("synthesize_emits_no_verdict", "synthesize output carries a top-level verdict")
     graded = [c for c in payload.get("candidates", []) if "verdict" in c]
     if graded:
-        return fail("no_self_grading", f"{len(graded)} synthesized candidates carry a verdict")
+        return fail("synthesize_emits_no_verdict", f"{len(graded)} synthesized candidates carry a verdict")
     return meet(
-        "no_self_grading",
+        "synthesize_emits_no_verdict",
         f"{len(payload.get('candidates', []))} candidates, none carrying a verdict",
     )
 
@@ -278,7 +286,12 @@ def provenance_gaps(label: str, specification: dict) -> list[str]:
 
 
 def objective_provenance(domain: dict) -> dict:
-    """Validation gate: a clause that constrains must say where it came from."""
+    """An authoring rule with a lint: a clause that constrains must name where it came from.
+
+    Not a validation gate, whatever it may look like from the outside. It checks the
+    form of a citation, never that the citation names anything real. VV.md says why
+    that distinction is the whole point.
+    """
     gaps: list[str] = []
     for path in sorted({c["spec"] for c in domain["cases"]}):
         gaps += provenance_gaps(path, load_spec(ROOT / path)["specification"])
@@ -347,7 +360,7 @@ def run_domain(domain: dict) -> dict:
         objective_declared_semantics(domain),
         objective_outcome_coverage(domain),
         objective_tamper(domain),
-        objective_no_self_grading(domain),
+        objective_synthesize_emits_no_verdict(domain),
         objective_provenance(domain),
     ]
     return {
