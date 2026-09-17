@@ -26,7 +26,11 @@ try:
     from realize.digest import canonical_bytes
     from realize.spec import load_spec
     from realize.verdicts import EXIT, GRAMMARS, PROBLEM_FAMILIES, SEMANTICS, Verdict
-except ModuleNotFoundError:  # a bare checkout, before `pip install -e ".[dev]"`
+except ModuleNotFoundError as missing:  # a bare checkout, before `pip install -e .`
+    # Only an absent top-level package means "not installed yet". A missing submodule
+    # means the install is broken, and falling back would hide that.
+    if missing.name != "realize":
+        raise
     sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
     from realize import __version__
     from realize.checker import check_search
@@ -240,11 +244,20 @@ def provenance_gaps(label: str, specification: dict) -> list[str]:
     ]
     for entry in entries:
         clause = entry.get("clause")
-        source = str(entry.get("source") or "").strip()
-        if not source:
+        source = entry.get("source")
+        # Types are checked rather than coerced: str(1) is a nonblank string, and the
+        # string "false" is truthy. A gate this easy to fool is not a gate.
+        if not isinstance(source, str) or not source.strip():
             gaps.append(f"{label}:{clause} cites an empty source")
             continue
-        if entry.get("unsourced"):
+        source = source.strip()
+        unsourced = entry.get("unsourced", False)
+        if not isinstance(unsourced, bool):
+            gaps.append(
+                f"{label}:{clause} declares unsourced as {unsourced!r}, which is not a boolean"
+            )
+            continue
+        if unsourced:
             continue
         named = next((d for d in REPO_DOCUMENTS if d in source), None)
         if named:

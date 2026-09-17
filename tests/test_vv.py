@@ -6,6 +6,9 @@ The Lean corroboration is deliberately not run here: it needs a toolchain that
 
 import importlib.util
 import json
+import os
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -113,3 +116,44 @@ def test_shipped_specs_carry_no_provenance_gaps():
     ):
         spec = json.loads(path.read_text(encoding="utf-8"))
         assert provenance_gaps(path.name, spec["specification"]) == []
+
+
+def test_provenance_rejects_a_non_string_source():
+    """`str(1)` is a nonblank string. Types are checked, not coerced."""
+    gaps = provenance_gaps("s", _spec([{"clause": "R", "source": 1}]))
+    assert len(gaps) == 1
+    assert "empty source" in gaps[0]
+
+
+def test_provenance_rejects_a_non_boolean_unsourced():
+    """The string "false" is truthy, and would otherwise wave a clause through."""
+    for value in ("false", 1, "yes", []):
+        entry = {"clause": "R", "unsourced": value, "source": "NONCLAIMS.md §2"}
+        gaps = provenance_gaps("s", _spec([entry]))
+        assert gaps, f"unsourced={value!r} slipped through"
+        assert "not a boolean" in gaps[0] or "NONCLAIMS.md" in gaps[0]
+
+
+def test_import_fallback_does_not_mask_a_broken_install(tmp_path):
+    """A missing submodule means the install is broken, not that it is absent.
+
+    Falling back to the checkout there would load working code over a broken
+    package and hide the breakage, so the runner re-raises instead.
+    """
+    # Mirror the real package: its __init__ imports a submodule. When that submodule
+    # is missing, Python purges `realize` from sys.modules, so a bare `sys.path`
+    # fallback would re-resolve to the checkout and report success over a broken
+    # install. A stub whose __init__ succeeds would not reproduce that.
+    stub = tmp_path / "realize"
+    stub.mkdir()
+    (stub / "__init__.py").write_text(
+        "from realize.verdicts import Verdict\n__version__ = 'stub'\n", encoding="utf-8"
+    )
+    env = dict(os.environ, PYTHONPATH=str(tmp_path))
+    proc = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "vv.py"), "--domain", "encoder.finite_case_table"],
+        capture_output=True, text=True, cwd=ROOT, env=env, check=False,
+    )
+    assert proc.returncode != 0
+    assert "ModuleNotFoundError" in proc.stderr
+    assert "realize.verdicts" in proc.stderr

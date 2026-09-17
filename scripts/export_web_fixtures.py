@@ -10,7 +10,11 @@ from pathlib import Path
 try:
     from realize import __version__
     from realize.demos import load_demo_spec, run_demo
-except ModuleNotFoundError:  # a bare checkout, before `pip install -e ".[dev]"`
+except ModuleNotFoundError as missing:  # a bare checkout, before `pip install -e .`
+    # Only an absent top-level package means "not installed yet". A missing submodule
+    # means the install is broken, and falling back would hide that.
+    if missing.name != "realize":
+        raise
     sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
     from realize import __version__
     from realize.demos import load_demo_spec, run_demo
