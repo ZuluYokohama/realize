@@ -148,9 +148,31 @@ The runner refuses a file that reaches for any of those before `lean` is even in
 file that may assume things corroborates nothing.
 
 Proving things in a second language is not yet a cross-check, though: two implementations can drift
-apart happily if nobody puts their answers side by side. So each Lean file also *reports* the
-finite quantities it settled — 29 of them — and `scripts/vv.py` recomputes every one from the Python
-kernel and compares. A disagreement fails the run; so does a fact that quietly stops being reported.
+apart happily if nobody puts their answers side by side. So each Lean file also *reports* what it
+settled, and `scripts/vv.py` answers the same questions from Python and compares. A disagreement
+fails the run; so does a fact that quietly stops being reported.
+
+### Two bands: the parts, and the effect
+
+The questions come in two kinds, and the second one is the point.
+
+| Band | Facts | Lean reports | Python reports | What only this band sees |
+|---|---|---|---|---|
+| parts | 29 | what a search contains — 625 template members, ten series reaching 7, the obstructed fibre | the same, recomputed from kernel internals | a kernel that counts wrong |
+| effect | 22 | the verdict the checker **has to** give a spec that ships, worked out from the branch order the checker uses | the verdict `check_search` **did** give that same spec file | a kernel whose parts are each right and whose verdict is assembled from them wrongly |
+
+The effect band is what makes this a check on the repository rather than on its arithmetic. Python
+answers it by running the real entry point on the real spec file and reading the certificate: the
+verdict, how settled it is, and why.
+
+Two injected faults show the difference. Move the histogram pre-check in `_search_grid` to after the
+enumeration: `grid_preserve_histogram` still reports `UNSAT`, still exits 3, so the domain matrix
+passes, the whole Python suite passes, and all 29 part-facts agree — only the effect band sees it
+change reason from `histogram_contradicts_R` to `no_typed_realization`. Report an exhaustive `UNSAT`
+as `unresolved` instead of `proved` and the same thing happens again.
+
+Coverage of that band is structural, not a list someone remembers to extend: `tests/test_vv.py`
+fails when a spec lands in `vv/specs/` or `demos/` that no Lean file derives a verdict for.
 
 What agreement buys: two implementations written in different languages, by different means, reached
 the same answer about the same small finite object. NONCLAIMS §7 says checker independence "reduces
@@ -159,8 +181,10 @@ count edited to match a drifting kernel, which the Python suite alone cannot cat
 suite is what would have been edited.
 
 What it does not buy: Lean does not verify the Python kernel, the CLI, the CI, or the papers'
-mathematics, and **a Lean file cannot mint a verdict**. If Lean and Python disagree, the V&V job goes
-red and one of them is wrong — the job does not say which.
+mathematics, and **a Lean file cannot mint a verdict** — nothing in `vv/lean/` sits on the path that
+produces a certificate. Lean does not read the spec files either: each one is transcribed into Lean
+by hand, so the comparison catches an edit to one side and not a matching edit to both. If Lean and
+Python disagree, the V&V job goes red and one of them is wrong — the job does not say which.
 
 ## What this does not establish
 

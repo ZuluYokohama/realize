@@ -168,3 +168,72 @@ def test_import_fallback_does_not_mask_a_broken_install(tmp_path):
     assert proc.returncode != 0
     assert "ModuleNotFoundError" in proc.stderr
     assert "realize.verdicts" in proc.stderr
+
+
+# ---------------------------------------------------------------- the effect band
+
+
+def test_every_effect_fact_names_a_verdict_an_optimality_and_a_reason():
+    """The fact Lean is compared against must carry all three, or it compares less."""
+    verdicts = {"PASS", "COUNTEREXAMPLE", "UNSAT", "UNKNOWN"}
+    optimalities = {"proved", "unresolved", "not_requested"}
+    facts = vv.effect_facts()
+    named = [k for k in facts if k.count(".") == 1]
+    assert len(named) == len(vv.EFFECT_SPECS)
+    for key in named:
+        verdict, optimality, reason = facts[key].split("/")
+        assert verdict in verdicts, key
+        assert optimality in optimalities, key
+        assert reason, f"{key} reports no reason"
+
+
+def test_every_shipped_spec_is_cross_checked():
+    """A spec nobody corroborates is a claim nobody has read twice.
+
+    This is the ratchet: add a spec to `vv/specs/` or `demos/` and this fails until
+    a Lean file derives the verdict it should draw.
+    """
+    shipped = {p.relative_to(ROOT).as_posix() for p in ROOT.glob("vv/specs/*.spec.json")}
+    shipped |= {p.relative_to(ROOT).as_posix() for p in ROOT.glob("demos/*/spec.json")}
+    covered = {relative for _name, relative, _keys in vv.EFFECT_SPECS}
+    assert shipped - covered == set(), "shipped but never cross-checked"
+    assert covered - shipped == set(), "cross-checked but no longer shipped"
+
+
+def test_effect_facts_come_from_the_entry_point_not_from_the_kernel():
+    """Both bands must be answered, and neither may stand in for the other."""
+    parts = vv.python_facts()
+    effects = vv.effect_facts()
+    assert not set(parts) & set(effects)
+    assert all(k.startswith("verdict.") for k in effects)
+    assert not any(k.startswith("verdict.") for k in parts)
+
+
+def test_compare_facts_refuses_two_sources_for_one_name(monkeypatch):
+    """A collision would let one band overwrite the other and drop a question."""
+    monkeypatch.setattr(vv, "python_facts", lambda: {"verdict.max_formula": "x"})
+    with pytest.raises(RuntimeError, match="claimed by two sources"):
+        vv.compare_facts({}, [])
+
+
+def test_compare_facts_catches_a_verdict_that_lean_derives_differently():
+    """The disagreement the band exists for: right parts, wrong verdict.
+
+    The stand-in reason is one no branch of the checker can produce. Naming a real
+    alternative would tie this test to the checker's wording, so a kernel that drifted
+    onto that wording would turn the test green for the wrong reason.
+    """
+    agreed = {**vv.python_facts(), **vv.effect_facts()}
+    agreed["verdict.grid_preserve_histogram"] = "UNSAT/proved/no_branch_reports_this"
+    result = vv.compare_facts(agreed, [])
+    assert not result["ok"]
+    assert [row["fact"] for row in result["disagreements"]] == ["verdict.grid_preserve_histogram"]
+
+
+def test_fact_value_renders_a_list_of_sets_the_way_lean_prints_it():
+    """`obstructions` is a list of subsets; flattening it would compare the wrong thing."""
+    assert vv._fact_value([[0, 1, 2]]) == "0,1,2"
+    assert vv._fact_value([[0, 1], [1, 2]]) == "0,1;1,2"
+    assert vv._fact_value(["separate_all"]) == "separate_all"
+    assert vv._fact_value(None) == ""
+    assert vv._fact_value(3) == "3"

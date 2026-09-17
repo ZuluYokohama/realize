@@ -59,6 +59,25 @@ PROVENANCE_CLAUSES = ("R", "K")
 # to catch; a clause that genuinely has no origin says so with `unsourced`.
 REPO_DOCUMENTS = ("NONCLAIMS.md", "README.md", "VV.md", "SKILL.md")
 
+# Specs that ship, the verdict each one draws out of the checker, and the witness
+# fields worth comparing. Lean derives what the verdict has to be; `effect_facts`
+# reads what it was. These are the repository's effect, not its internals.
+EFFECT_SPECS = (
+    ("max_formula", "demos/max_formula/spec.json", ("universe", "n_valid")),
+    ("formula_affine_only", "vv/specs/formula_affine_only.spec.json", ("universe",)),
+    ("formula_unrecognized_phrase", "vv/specs/formula_unrecognized_phrase.spec.json", ()),
+    ("three_state", "demos/three_state/spec.json", ("obstructions",)),
+    ("encoder_separating", "vv/specs/encoder_separating.spec.json", ("adequate_encoders",)),
+    ("encoder_zero_budget", "vv/specs/encoder_zero_budget.spec.json", ()),
+    ("series_seven", "vv/specs/series_seven.spec.json", ("n_valid", "min_len")),
+    ("series_even_repertoire", "vv/specs/series_even_repertoire.spec.json", ("n_valid",)),
+    ("series_target_nine", "vv/specs/series_target_nine.spec.json", ()),
+    ("series_zero_budget", "vv/specs/series_zero_budget.spec.json", ()),
+    ("grid_recolor", "demos/grid_recolor/spec.json", ("n_valid",)),
+    ("grid_preserve_histogram", "vv/specs/grid_preserve_histogram.spec.json", ()),
+    ("grid_zero_budget", "vv/specs/grid_zero_budget.spec.json", ()),
+)
+
 
 # ---------------------------------------------------------------- primitives
 
@@ -480,14 +499,56 @@ def python_facts() -> dict[str, str]:
     return out
 
 
+def _fact_value(value: Any) -> str:
+    """A witness field as the Lean side prints it: a list joined, a list of lists twice."""
+    if isinstance(value, list):
+        return ";".join(
+            ",".join(str(v) for v in item) if isinstance(item, list) else str(item)
+            for item in value
+        )
+    return "" if value is None else str(value)
+
+
+def effect_facts() -> dict[str, str]:
+    """What the package emits, read from the entry point that emits it.
+
+    `python_facts` recomputes quantities from kernel internals, so it and Lean agree
+    about the parts of a search. These run `check_search` on the spec files that
+    ship and read the certificate: the verdict, how settled it is, and why. That is
+    the effect. A kernel whose parts are each right and whose verdict is assembled
+    from them wrongly disagrees here and nowhere else.
+    """
+    out: dict[str, str] = {}
+    for name, relative, witness_keys in EFFECT_SPECS:
+        cert = check_search(ROOT / relative)
+        witness = cert["witness"]
+        out[f"verdict.{name}"] = (
+            f"{cert['verdict']}/{cert['optimality']}/{witness.get('reason', '')}"
+        )
+        for key in witness_keys:
+            out[f"verdict.{name}.{key}"] = _fact_value(witness.get(key))
+    return out
+
+
 def compare_facts(reported: dict[str, str], repeated: list[str]) -> dict:
     """Two implementations, one set of questions. Every fact must be compared.
+
+    The questions come in two bands: what the search finds (`python_facts`) and what
+    the checker then reports (`effect_facts`). Lean answers both from its own
+    enumeration, so agreement on the first does not buy agreement on the second.
 
     A fact reported twice is a failure even when both copies agree: the second
     would overwrite the first, so one file could quietly supply the value another
     file got wrong.
     """
     expected = python_facts()
+    effects = effect_facts()
+    claimed_twice = sorted(set(expected) & set(effects))
+    if claimed_twice:
+        # One name, two sources: the second would overwrite the first and the
+        # comparison would silently drop a question.
+        raise RuntimeError(f"fact name claimed by two sources: {claimed_twice}")
+    expected.update(effects)
     disagreements = [
         {"fact": k, "lean": reported.get(k), "python": v}
         for k, v in sorted(expected.items())
@@ -568,7 +629,8 @@ def run_lean(require: bool) -> dict:
     return {
         "status": "checked",
         "ok": all(r["ok"] for r in results) and cross["ok"],
-        "detail": "Lean corroborates the finite facts. It does not certify the Python kernel.",
+        "detail": "Lean corroborates the finite facts and the verdicts drawn from them. "
+        "It does not certify the Python kernel.",
         "files": results,
         "cross_check": cross,
     }
