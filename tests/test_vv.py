@@ -14,8 +14,11 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def _load_runner():
-    # By explicit path: the repo has both `scripts/vv.py` and a `vv/` data directory,
-    # and `import vv` would be free to pick the wrong one.
+    """Import `scripts/vv.py` by path.
+
+    The repo has both `scripts/vv.py` and a `vv/` data directory, so a plain
+    `import vv` would be free to pick the wrong one.
+    """
     spec = importlib.util.spec_from_file_location("realize_vv", ROOT / "scripts" / "vv.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -29,6 +32,7 @@ IDS = [d["id"] for d in DOMAINS]
 
 
 def test_config_version_is_supported():
+    """The matrix must declare a config version this runner accepts."""
     assert CONFIG["schema_version"] == vv.CONFIG_VERSION
 
 
@@ -41,6 +45,7 @@ def test_every_declared_domain_is_covered():
 
 @pytest.mark.parametrize("domain", DOMAINS, ids=IDS)
 def test_domain_meets_its_objectives(domain):
+    """Every per-case objective and every per-domain property, for one domain."""
     result = vv.run_domain(domain)
     unmet = []
     for case in result["cases"]:

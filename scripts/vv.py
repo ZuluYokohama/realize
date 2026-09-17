@@ -60,6 +60,7 @@ def expected_exit(outcome: str) -> int:
 
 
 def run_cli(spec: Path, candidate: Path) -> tuple[int, str, str]:
+    """Call `realize check` as a subprocess, so the exit code is tested as an interface."""
     proc = subprocess.run(
         [sys.executable, "-m", "realize", "check", str(spec), str(candidate)],
         capture_output=True,
@@ -89,10 +90,12 @@ def observe(case: dict) -> dict:
 
 
 def fail(objective: str, detail: str) -> dict:
+    """Record an objective as not met, with the reason a reader will need."""
     return {"objective": objective, "met": False, "detail": detail}
 
 
 def meet(objective: str, detail: str = "") -> dict:
+    """Record an objective as met, with what was observed."""
     return {"objective": objective, "met": True, "detail": detail}
 
 
@@ -129,6 +132,7 @@ def case_objectives(case: dict, seen: dict) -> list[dict]:
 
 
 def objective_determinism(case: dict, first: dict) -> dict:
+    """Run the case a second time. A checker whose answer wanders is not a checker."""
     again = observe(case)
     if first["certificate"] is None and again["certificate"] is None:
         same = first["outcome"] == again["outcome"] and first["exit"] == again["exit"]
@@ -257,6 +261,7 @@ def objective_outcome_coverage(domain: dict) -> dict:
 
 
 def run_domain(domain: dict) -> dict:
+    """Run every case in one domain, then the objectives that span the whole domain."""
     cases = []
     for case in domain["cases"]:
         seen = observe(case)
@@ -345,9 +350,11 @@ def python_facts() -> dict[str, str]:
     from realize.series import classify, syntactic_count
 
     def halves(tuples) -> str:
+        """Coefficient tuples as whole numbers of halves, matching the Lean encoding."""
         return ";".join(",".join(str(int(2 * v)) for v in c) for c in tuples)
 
     def joined(values) -> str:
+        """Comma-joined, matching how the Lean side prints a list."""
         return ",".join(str(v) for v in values)
 
     out: dict[str, str] = {
@@ -389,6 +396,7 @@ def python_facts() -> dict[str, str]:
     out["grid.empty_series_meets_R"] = str(grid == goal_y(grid)).lower()
 
     def hist(g) -> str:
+        """Colour counts across the ten-symbol palette, in palette order."""
         flat = [v for row in g for v in row]
         return joined(flat.count(v) for v in range(10))
 
@@ -485,6 +493,7 @@ def run_lean(require: bool) -> dict:
 
 
 def render(report: dict) -> str:
+    """Lay the report out for whoever is reading CI output, failures indented under their case."""
     lines = []
     cov = report["coverage"]
     lines.append("coverage")
@@ -528,6 +537,7 @@ def render(report: dict) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run the matrix, write the report, and return 0 (all objectives met) or 1."""
     parser = argparse.ArgumentParser(
         prog="vv",
         description="Run the realize verification & validation matrix across declared domains.",
