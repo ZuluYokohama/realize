@@ -218,11 +218,30 @@ def objective_tamper(domain: dict) -> dict:
     )
 
 
+def verdict_keys(node: Any, path: str = "") -> list[str]:
+    """Every place a `verdict` key appears in a decoded JSON document, by path.
+
+    A synthesize payload is a proposal. A grade nested three levels down still reads
+    as a grade, so the whole document is walked rather than its first two levels.
+    """
+    found: list[str] = []
+    if isinstance(node, dict):
+        for key, value in node.items():
+            here = f"{path}.{key}" if path else key
+            if key == "verdict":
+                found.append(here)
+            found += verdict_keys(value, here)
+    elif isinstance(node, list):
+        for index, value in enumerate(node):
+            found += verdict_keys(value, f"{path}[{index}]")
+    return found
+
+
 def objective_synthesize_emits_no_verdict(domain: dict) -> dict:
     """The proposer channel must not hand back something that reads as a verdict.
 
     This is one mechanical consequence of NONCLAIMS §9, not a check of the principle.
-    It reads the shape of one `synthesize` payload; it cannot see an agent calling
+    It reads one `synthesize` payload, every key of it; it cannot see an agent calling
     another model to grade an answer, which is the thing §9 actually forbids.
     """
     case = next((c for c in domain["cases"] if c["expect"]["outcome"] == "PASS"), None)
@@ -239,14 +258,15 @@ def objective_synthesize_emits_no_verdict(domain: dict) -> dict:
     if proc.returncode != 0:
         return fail("synthesize_emits_no_verdict", f"synthesize exited {proc.returncode}: {proc.stderr.strip()}")
     payload = json.loads(proc.stdout)
-    if "verdict" in payload:
-        return fail("synthesize_emits_no_verdict", "synthesize output carries a top-level verdict")
-    graded = [c for c in payload.get("candidates", []) if "verdict" in c]
+    graded = verdict_keys(payload)
     if graded:
-        return fail("synthesize_emits_no_verdict", f"{len(graded)} synthesized candidates carry a verdict")
+        return fail(
+            "synthesize_emits_no_verdict",
+            f"synthesize output carries a verdict at {', '.join(graded)}",
+        )
     return meet(
         "synthesize_emits_no_verdict",
-        f"{len(payload.get('candidates', []))} candidates, none carrying a verdict",
+        f"{len(payload.get('candidates', []))} candidates, no verdict key at any depth",
     )
 
 

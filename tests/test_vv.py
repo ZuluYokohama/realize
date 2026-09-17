@@ -237,3 +237,13 @@ def test_fact_value_renders_a_list_of_sets_the_way_lean_prints_it():
     assert vv._fact_value(["separate_all"]) == "separate_all"
     assert vv._fact_value(None) == ""
     assert vv._fact_value(3) == "3"
+
+
+def test_verdict_keys_finds_a_grade_nested_anywhere():
+    """The shallow check this replaced waved `{"metadata": {"verdict": ...}}` through."""
+    assert vv.verdict_keys({"candidates": [], "exhausted": True}) == []
+    assert vv.verdict_keys({"verdict": "PASS"}) == ["verdict"]
+    assert vv.verdict_keys({"candidates": [{"verdict": "PASS"}]}) == ["candidates[0].verdict"]
+    assert vv.verdict_keys({"metadata": {"verdict": "PASS"}}) == ["metadata.verdict"]
+    assert vv.verdict_keys({"a": [{"b": {"verdict": "PASS"}}]}) == ["a[0].b.verdict"]
+    assert vv.verdict_keys({"verdict": {"verdict": "PASS"}}) == ["verdict", "verdict.verdict"]

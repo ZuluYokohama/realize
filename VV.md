@@ -81,7 +81,7 @@ Per domain:
 | `declared_semantics` | Matrix, kernel table, and every referenced spec agree on family / grammar / semantics. |
 | `outcome_coverage` | The domain is seen reaching `PASS`, `COUNTEREXAMPLE`, `UNSAT`, `UNKNOWN`, and adapter reject. All five. |
 | `tamper_evidence` | Change `bound.budget` by one, and the candidate bound to that spec is refused rather than judged. |
-| `synthesize_emits_no_verdict` | `realize synthesize` returns candidates and no `verdict`, anywhere in the payload. |
+| `synthesize_emits_no_verdict` | `realize synthesize` returns candidates, and no `verdict` key at any depth of the payload. |
 | `provenance` | Every non-null `R` and `K` clause names an origin, or declares with `unsourced` that it has none. |
 
 ### What `provenance` can and cannot decide
