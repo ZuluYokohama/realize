@@ -21,12 +21,14 @@ OUT = ROOT / "web" / "fixtures"
 
 
 def write(name: str, obj: dict) -> None:
+    """Write one fixture, sorted and newline-terminated so reruns produce no diff."""
     path = OUT / name
     path.write_text(json.dumps(obj, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(f"wrote {path.relative_to(ROOT)}")
 
 
 def main() -> None:
+    """Dump every demo certificate the pages display, plus a manifest naming them."""
     OUT.mkdir(parents=True, exist_ok=True)
     files: list[str] = []
 

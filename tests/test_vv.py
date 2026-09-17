@@ -67,10 +67,12 @@ def test_domain_reaches_all_four_verdicts_and_the_adapter(domain):
 
 
 def _spec(provenance, *, k=None):
+    """A minimal specification carrying just the clauses the provenance rule reads."""
     return {"R": {"phrase": "larger"}, "K": k, "provenance": provenance}
 
 
 def test_provenance_accepts_a_named_origin():
+    """A paper and a section is what a citation is supposed to look like."""
     assert provenance_gaps("s", _spec([{"clause": "R", "source": "VCOS §8.1 Table 2"}])) == []
 
 
@@ -87,11 +89,13 @@ def test_provenance_rejects_a_repo_document_as_an_origin():
 
 
 def test_provenance_rejects_a_blank_source():
+    """Whitespace and a missing key are both the absence of a source, not a source."""
     assert provenance_gaps("s", _spec([{"clause": "R", "source": "   "}])) != []
     assert provenance_gaps("s", _spec([{"clause": "R"}])) != []
 
 
 def test_provenance_rejects_a_constraining_clause_that_cites_nothing():
+    """A K that constrains is as answerable for its origin as an R."""
     gaps = provenance_gaps("s", _spec([{"clause": "R", "source": "VCOS §8.1"}], k={"inv": "x"}))
     assert any("K constrains but cites nothing" in g for g in gaps)
 
@@ -103,6 +107,7 @@ def test_provenance_allows_a_declared_absence_of_origin():
 
 
 def test_shipped_specs_carry_no_provenance_gaps():
+    """The rule is only worth having if what ships already obeys it."""
     for path in sorted((ROOT / "vv" / "specs").glob("*.json")) + sorted(
         (ROOT / "demos").glob("*/spec.json")
     ):
