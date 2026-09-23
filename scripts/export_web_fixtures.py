@@ -7,23 +7,32 @@ import json
 import sys
 from pathlib import Path
 
+try:
+    from realize import __version__
+    from realize.demos import load_demo_spec, run_demo
+except ModuleNotFoundError as missing:  # a bare checkout, before `pip install -e .`
+    # Only an absent top-level package means "not installed yet". A missing submodule
+    # means the install is broken, and falling back would hide that.
+    if missing.name != "realize":
+        raise
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+    from realize import __version__
+    from realize.demos import load_demo_spec, run_demo
+
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
-
-from realize import __version__  # noqa: E402
-from realize.demos import load_demo_spec, run_demo  # noqa: E402
-
 
 OUT = ROOT / "web" / "fixtures"
 
 
 def write(name: str, obj: dict) -> None:
+    """Write one fixture, sorted and newline-terminated so reruns produce no diff."""
     path = OUT / name
     path.write_text(json.dumps(obj, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(f"wrote {path.relative_to(ROOT)}")
 
 
 def main() -> None:
+    """Dump every demo certificate the pages display, plus a manifest naming them."""
     OUT.mkdir(parents=True, exist_ok=True)
     files: list[str] = []
 

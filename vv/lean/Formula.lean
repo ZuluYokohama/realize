@@ -1,8 +1,11 @@
 /-
   Cross-check for the `formula.bounded_coeff_template` domain (VCOS §8.1 / Table 2).
 
-  Lean agrees or disagrees with the finite facts the Python kernel reports.
-  It does not certify the Python kernel, and it cannot mint a verdict.
+  Lean agrees or disagrees with the finite facts the Python kernel reports, and with
+  the verdict it reports for each spec that ships in this domain.
+
+  It does not certify the Python kernel, and it cannot mint a verdict: working out
+  what a verdict has to be is not issuing one.
 
   Every coefficient in D = {-1, -1/2, 0, 1/2, 1} is a whole number of halves, so
   the template is carried here in halves: `h` stands for the value `h/2`. That
@@ -93,5 +96,49 @@ def showHalves (cs : List Coeffs) : String :=
 #eval IO.println s!"fact formula.smaller_solution={showHalves (solutions .smaller)}"
 #eval IO.println s!"fact formula.midpoint_solution={showHalves (solutions .midpoint)}"
 #eval IO.println s!"fact formula.absdiff_solution={showHalves (solutions .absdiff)}"
+
+/-! ## What the checker has to report
+
+    Everything above is a quantity found *inside* the search. These are the effect:
+    the verdict `realize.checker.check_search` must emit for a spec file that ships
+    in this repository. `scripts/vv.py` runs the real entry point on the real file
+    and compares the two.
+
+    The branch order below is the checker's, transcribed. The numbers fed to it are
+    computed here. A kernel whose parts are each right and whose verdict is assembled
+    from them wrongly disagrees here and nowhere else. -/
+
+/-- What `_search_formula` reports, as a function of what the search finds.
+    `known` is whether R names a phrase the checker recognizes. -/
+def searchVerdict (budget card nValid : Nat) (known : Bool) : String :=
+  if budget == 0 then "UNKNOWN/unresolved/zero_budget"
+  else if !known then "UNKNOWN/unresolved/unrecognized_phrase"
+  else if card > budget then "UNKNOWN/unresolved/incomplete_coverage"
+  else if nValid == 0 then "UNSAT/proved/empty_template"
+  else "UNKNOWN/proved/realizations_exist_supply_a_candidate"
+
+/-- `demos/max_formula/spec.json`: phrase `larger`, whole template, budget 10000. -/
+def maxFormula : String :=
+  searchVerdict 10000 template.length (solutions .larger).length true
+
+/-- `vv/specs/formula_affine_only.spec.json`: the `|a-b|` leg is withdrawn. -/
+def affineOnly : String :=
+  searchVerdict 10000 affine.length (affine.filter (realizes · .larger)).length true
+
+/-- `vv/specs/formula_unrecognized_phrase.spec.json`: R names `mostly_bigger_ish`. -/
+def unrecognizedPhrase : String := searchVerdict 10000 template.length 0 false
+
+theorem max_formula_verdict :
+    maxFormula = "UNKNOWN/proved/realizations_exist_supply_a_candidate" := by decide
+theorem affine_only_verdict : affineOnly = "UNSAT/proved/empty_template" := by decide
+theorem unrecognized_verdict :
+    unrecognizedPhrase = "UNKNOWN/unresolved/unrecognized_phrase" := by decide
+
+#eval IO.println s!"fact verdict.max_formula={maxFormula}"
+#eval IO.println s!"fact verdict.max_formula.universe={template.length}"
+#eval IO.println s!"fact verdict.max_formula.n_valid={(solutions .larger).length}"
+#eval IO.println s!"fact verdict.formula_affine_only={affineOnly}"
+#eval IO.println s!"fact verdict.formula_affine_only.universe={affine.length}"
+#eval IO.println s!"fact verdict.formula_unrecognized_phrase={unrecognizedPhrase}"
 
 end Realize.Formula

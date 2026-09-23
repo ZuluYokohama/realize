@@ -10,7 +10,13 @@
     "K": null,
     "preferences": [],
     "evidence_mode": "exhaustive_finite",
-    "provenance": [{"clause": "R", "source": "no source: the phrase is deliberately outside the declared set (NONCLAIMS.md §1)"}]
+    "provenance": [
+      {
+        "clause": "R",
+        "unsourced": true,
+        "source": "the phrase is deliberately outside the declared set; NONCLAIMS.md §1 refuses to invent an R for it"
+      }
+    ]
   },
   "library": {
     "encoders": [],
